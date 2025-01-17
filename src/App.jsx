@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { CartProvider } from './components/Cart/CartContext';
-import HeroSection from './components/Homepage/HeroSection';
-import MaterialSection from './components/Homepage/MaterialSection';
-import ShoeShowcase from './components/Homepage/ShoeShowcase';
-import ProductListing from './components/Homepage/ProductListing';
-import Cartpage from './components/Cart/Cartpage';
+import { CartProvider } from '../client/src/components/Cart/CartContext.jsx';
+import HeroSection from '../client/src/components/Homepage/HeroSection.jsx';
+import MaterialSection from '../client/src/components/Homepage/MaterialSection.jsx';
+import ShoeShowcase from '../client/src/components/Homepage/ShoeShowcase.jsx';
+import ProductListing from '../client/src/components/Homepage/ProductListing.jsx';
+import Cartpage from '../client/src/components/Cart/Cartpage.jsx';
 
 // 1. Import your ContactPage
-import ContactPage from './components/Form/ContactPage';
+import ContactPage from '../client/src/components/Form/ContactPage.jsx';
 
 // Home component
 function Home() {
