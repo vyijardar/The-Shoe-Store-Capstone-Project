@@ -1,80 +1,100 @@
-import '../css/animate.css';
 import '../css/icomoon.css';
 import '../css/ionicons.min.css';
-import '../css/bootstrap.min.css';
-import '../css/magnific-popup.css';
-import '../css/bootstrap-datepicker.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/style.css';
-import '../fonts/flaticon/font/flaticon.css';
-import '../js/main.js';
+
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faShoppingCart, faSignInAlt, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { Link, useLocation  } from "react-router-dom";
 import logo from '../assets/logo1.png';
 
-export default function Navigations() {
 
+export default function Navigations({ cartCount }) {
+    // State for menu dropdowns (optional)
+    const location = useLocation();
+    // Check if the current path matches the link
+    const isActive = (path) => location.pathname === path;
+
+    function handleSubmit(){
+
+    }
+    function handleChange() {
+        
+    }
+    
     return (
-       
-            <nav className="colorlib-nav" role="navigation">
-                <div className="sale">
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-sm-12 offset-sm-3 text-center">
-                                <div className="row">
-                                    <div className="owl-carousel2">
-                                        <div className="item">
-                                            <div className="col">
-                                                <h3><a href="#">Free Express Shipping on all orders with all duties included</a></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        <nav className="colorlib-nav" role="navigation">
+            <div className="top-header ">
+                <div className="row">
+                <div className="col-sm-8 offset-sm-2 text-center">
+                    <h3> Free Express Shipping on all orders with all duties included</h3>
+                </div>
+                </div>
+            </div>
+            {/* Top Menu */}
+            <div className="top-menu">
+                <div className="container">
+                    <div className="row">
+                        {/* Logo Section */}
+                        <div className="col-sm-7 col-md-9">
+                            <div id="colorlib-logo">
+                                <Link to="/">
+                                    <img src={logo} alt="Shoe Store" width="200" height="70" />
+                                </Link>
                             </div>
+                        </div>
+
+                        {/* Search Section */}
+                        <div className="col-sm-5 col-md-3">
+                            <form action="#" onSubmit={handleSubmit} className="search-wrap">
+                                <div className="form-group">                                 
+                                    <input type="search" className="form-control search" placeholder="Search"  onChange={handleChange}/>
+                                    <button className="btn btn-primary submit-search text-center" type="submit">
+                                        <i className="icon-search"></i>
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="row">
+                        <div className="col-sm-12 text-left menu-1">
+                            <ul>
+                                <li className={isActive('/') ? 'active' : ''}> <Link to="/">Home</Link> </li>
+                                <li className={isActive("/men") ? "active" : ""} > <Link to="/men">Men</Link> </li>
+                                <li className={isActive("/women") ? "active" : ""} > <Link to="/women">Women</Link> </li>
+                                <li className={isActive("/about") ? "active" : ""}><Link to="/about">About</Link></li>
+                                <li className={isActive("/contact") ? "active" : ""}><Link to="/contact">Contact</Link></li>
+                                {/* Cart & Account Links */}
+                                <li className={isActive("/cart") ? "active cart" : "cart"}>
+                                    <Link to="/cart">
+                                    <FontAwesomeIcon icon={faShoppingCart} /> Cart [{cartCount}]
+                                        
+                                    </Link>
+                                </li>
+                                <li className={isActive("/account") ? "active cart" : "cart"}>
+                                    <Link to="/account">
+                                         <FontAwesomeIcon icon={faUser} />  Account
+                                    </Link>
+                                </li>
+                                <li className={isActive("/signup") ? "active cart" : "cart"}>
+                                    <Link to="/signup">
+                                        <FontAwesomeIcon icon={faUserPlus} /> Sign Up
+                                    </Link>
+                                </li>
+                                <li className={isActive("/login") ? "active cart" : "cart"}>
+                                    <Link to="/login">
+                                       <FontAwesomeIcon icon={faSignInAlt} /> Login
+                                    </Link>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-                <div className='top-menu'>
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-sm-7 col-md-9">
-                                <div id="colorlib-logo">
-                                    <a href="#">
-                                        <img src={logo} alt="Recycled Shoe Store" width="200" height="70"></img>
-                                    </a>
-                                </div>
-                            </div>
-                            <div className="col-sm-5 col-md-3">
-                                <form action="#" className='search-wrap'>
-                                    <div className='form-group'>
-                                        <input type='search' className='form-control search' placeholder='Search' />
-                                        <button className='btn btn-primary submit-search text-center' type='submit' ><i className='icon-search'></i></button>
-                                    </div>
-                                </form>
-                            </div>
-
-                        </div>
-                        <div className='row'>
-                            <div className='col-sm-12 text-left menu-1'>
-                                <ul>
-                                    <li className="active"> <a href='#'>Home</a></li>
-                                    <li className="has-dropdown"> <a href='#'>Men</a>
-                                        <ul className="dropdown">
-                                            <li><a href="#">Running Shoes</a></li>
-                                            <li><a href="#">Athelete Shoes</a></li>
-                                            <li><a href="#">Football Shoes</a></li>
-                                        </ul>
-                                    </li>
-                                    <li> <a href='#'>Women</a></li>
-                                    <li> <a href='#'>About</a></li>
-                                    <li> <a href='#'>Contact</a></li>
-                                    <li className="cart"><a href="#"><i className="icon-shopping-cart"></i> Cart [0]</a></li>
-                                    <li className="cart"><a href="#"><i className="icon-user"></i> Account </a></li>
-                                    <li className="cart"><a href="#"><i className="icon-book"></i> Sign Up </a></li>
-                                    <li className="cart"><a href="#"><i className="icon-enter"></i> Login </a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </nav>
+            </div>
+        </nav>
     );
 }
