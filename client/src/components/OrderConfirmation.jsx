@@ -1,11 +1,9 @@
 import React from "react";
-import Header from "./Header";
-import "../styles/OrderConfirmation.css";
+// import "../styles/OrderConfirmation.css";
 
 const OrderConfirmation = ({ orderDetails }) => {
   return (
     <>
-      <Header />
       <div className="order-confirmation-container">
         <div className="order-summary">
           <div className="confirmation-message">

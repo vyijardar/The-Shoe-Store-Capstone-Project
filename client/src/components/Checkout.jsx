@@ -1,6 +1,5 @@
 import React from "react";
-import Header from "./Header";
-import "../styles/Checkout.css";
+// import "../styles/Checkout.css";
 import { useNavigate } from "react-router-dom";
 
 const Checkout = ({ cartItems }) => {
@@ -12,7 +11,6 @@ const Checkout = ({ cartItems }) => {
 
   return (
     <>
-      <Header />
       <div className="checkout-page">
         <div className="billing-section">
           <h2>Billing Details</h2>

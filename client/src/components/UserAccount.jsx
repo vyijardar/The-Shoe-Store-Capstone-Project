@@ -1,11 +1,9 @@
 import React from "react";
-import Header from "./Header";
-import "../styles/UserAccount.css";
+// import "../styles/UserAccount.css";
 
 const UserAccount = ({ user, orders }) => {
   return (
-    <>
-      <Header />
+    <>      
       <div className="user-account-container">
         <div className="main-content">
           <h2>My Account</h2>
