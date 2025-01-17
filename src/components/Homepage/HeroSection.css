@@ -1,0 +1,68 @@
+/* HeroSection.css */
+
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 80vh; /* Adjust height as needed */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;  /* Vertically center content */
+  justify-content: flex-start; /* Left-align content */
+  padding: 0 5rem;     /* Horizontal padding for the hero content */
+  color: #fff;         /* Text color */
+  overflow: hidden;
+}
+
+/* Optional overlay to darken the background image */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* Semi-transparent black */
+  pointer-events: none;           /* Don’t block clicks */
+}
+
+/* Hero content container */
+.hero-content {
+  position: relative;  /* Stacking above overlay */
+  max-width: 600px;    /* Constrain text width */
+  z-index: 1;          /* Above the overlay */
+}
+
+/* Headline styling */
+.hero-content h1 {
+  font-size: 4rem;     /* Adjust as needed */
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+/* Subtext */
+.hero-content p {
+  font-size: 1.2rem; 
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+/* Buttons row */
+.hero-buttons {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.hero-buttons button {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.hero-buttons button:hover {
+  background-color: #dedede;
+}
