@@ -1,6 +1,6 @@
 // src/components/MaterialSection.js
 import React from 'react';
-import './MaterialSection.css';
+import '../css/MaterialSection.css';
 
 function MaterialSection() {
   return (

@@ -1,21 +1,26 @@
 import React,{useState ,useEffect} from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './App.css'
-import { CartProvider } from './components/Cart/CartContext';
-import Cartpage from './components/Cart/Cartpage';
-import Home from './components/Homepage/Home';
+import { CartProvider } from './context/CartContext';
+import Cartpage from './components/Cartpage';
+import Home from './pages/Home';
 import Navigations from './components/Navigations'
 import Footer from './components/Footer'
-import Men from './components/Shop/Men'
-import Women from './components/Shop/Women'
+import Men from './pages/Men'
+import Women from './pages/Women'
 import ProductDetail from './components/ProductDetail'
-import ContactPage from './components/Form/ContactPage'
+import ContactPage from './pages/ContactPage'
 import Checkout from './components/Checkout'
-import UserAccount from './components/UserAccount'
+import UserAccount from './pages/UserAccount'
+import Login from './pages/Login'
+import SignUp from './pages/SignUp'
+import About from './pages/About'
 import OrderConfirmation from './components/OrderConfirmation'
+import ShoeCare from "./pages/Shoecare";
 function App() {
     const [cartCount, setCartCount] = useState(0);
-    
+    const [token, setToken] = useState(null);
+    const [isLoggedIn, setisLoggedIn] = useState(false);
     // Initialize the cart count from localStorage on component mount
     useEffect(() => {
       const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -26,21 +31,22 @@ function App() {
     <div id="page">
        <CartProvider>
       <Router>
-      <Navigations cartCount={cartCount}  />
+      <Navigations cartCount={cartCount} token={token}
+            setToken={setToken} setisLoggedIn={setisLoggedIn}  />
       <Routes>
-        <Route path="/" element={<Home />} /> 
-        <Route path="/men" element={<Men />} />
-        <Route path="/women" element={<Women />} />
-        <Route path='/products/:id' element={<ProductDetail  setCartCount={setCartCount}/>}></Route>
-        <Route path="/cart" element={<Cartpage />} />
-         {/*<Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />                  
-        <Route path="/about" element={<About />} />*/}
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/orderconfirm" element={<OrderConfirmation />} />
-        <Route path="/account" element={<UserAccount />} />
-        <Route path="/contact" element={<ContactPage />} />
-         
+        <Route path="/" element={<Home token={token} setToken={setToken}  />} /> 
+        <Route path="/men" element={<Men  token={token} setToken={setToken} />} />
+        <Route path="/women" element={<Women token={token} setToken={setToken}  />} />
+        <Route path='/products/:id' element={<ProductDetail  setCartCount={setCartCount}/>} token={token} setToken={setToken} ></Route>
+        <Route path="/cart" element={<Cartpage token={token} setToken={setToken}  />} />
+        <Route path="/login" element={<Login  token={token} setToken={setToken}  setisLoggedIn={setisLoggedIn}  />} />
+        <Route path="/signup" element={<SignUp token={token} setToken={setToken}  />} />                  
+        <Route path="/about" element={<About token={token} setToken={setToken}  />} />
+        <Route path="/checkout" element={<Checkout token={token} setToken={setToken}  />} />
+        <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken}  />} />
+        <Route path="/account" element={<UserAccount token={token} setToken={setToken}  />} />
+        <Route path="/contact" element={<ContactPage  token={token} setToken={setToken} />} />
+        <Route path="/shoe-care" element={<ShoeCare />} />
       </Routes>
       <Footer/>
     </Router>

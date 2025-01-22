@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Breadcrumbs from '../BreadCrumbs';
-import ProductFilter from './ProductFilter';
-import ProductGrid from './ProductGrid';
-import ProductSort from './ProductSort';
-import men from '../../assets/images/men.jpg';
-import men1 from '../../assets/images/item-9.jpg';
-import men2 from '../../assets/images/item-11.jpg';
+import Breadcrumbs from '../components/BreadCrumbs';
+import ProductFilter from '../components/ProductFilter';
+import ProductGrid from '../components/ProductGrid';
+import ProductSort from '../components/ProductSort';
+import men from '../assets/images/men.jpg';
+import men1 from '../assets/images/item-9.jpg';
+import men2 from '../assets/images/item-11.jpg';
 
-export default function Men() {
+export default function Women() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -15,7 +15,7 @@ export default function Men() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch("https://fakestoreapi.com/products");
+                const response = await fetch("https://fakestoreapi.com/products/category/jewelery");
                 const result = await response.json();
                 setProducts(result);
                 setFilteredProducts(result);
@@ -75,12 +75,12 @@ export default function Men() {
 
     return (
         <>
-            <Breadcrumbs currentPage="Men" />
+            <Breadcrumbs currentPage="Women" />
             <div className="breadcrumbs-two">
                 <div className="container">
                     <div className="row">
                         <div className="col">
-                            <h2>Men's</h2>
+                            <h2>Women's</h2>
                         </div>
                     </div>
                 </div>

@@ -1,14 +1,14 @@
 // src/components/ShoeShowcase.js
 import React from 'react';
-import './ShoeShowcase.css';
-
+import '../css/ShoeShowcase.css';
+import men2 from '../assets/images/item-11.jpg';
 function ShoeShowcase() {
   return (
     <section className="shoe-showcase">
       <h2>See how your shoes are made</h2>
       <div className="showcase-container">
         <div className="shoe-image">
-          {/* Placeholder for shoe image with annotation points */}
+         <img src={men2} alt="" className="img-fluid" />
         </div>
         <ul className="shoe-points">
           <li>Recycled Upper</li>

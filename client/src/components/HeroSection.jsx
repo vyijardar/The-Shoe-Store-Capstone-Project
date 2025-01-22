@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './HeroSection.css';
+import '../css/HeroSection.css';
 
 // Replace these with your actual image URLs or imported images
 const images = [

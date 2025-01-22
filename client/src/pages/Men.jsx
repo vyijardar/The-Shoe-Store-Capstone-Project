@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
-import Breadcrumbs from '../BreadCrumbs';
-import ProductFilter from './ProductFilter';
-import ProductGrid from './ProductGrid';
-import ProductSort from './ProductSort';
-import men from '../../assets/images/men.jpg';
-import men1 from '../../assets/images/item-9.jpg';
-import men2 from '../../assets/images/item-11.jpg';
+import Breadcrumbs from '../components/BreadCrumbs';
+import ProductFilter from '../components/ProductFilter';
+import ProductGrid from '../components/ProductGrid';
+import ProductSort from '../components/ProductSort';
+import men from '../assets/images/men.jpg';
+import men1 from '../assets/images/item-9.jpg';
+import men2 from '../assets/images/item-11.jpg';
 
-export default function Women() {
+
+export default function Men() {
     const [products, setProducts] = useState([]);
-    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]); 
+   
 
     // Fetch products from API
     useEffect(() => {
@@ -75,7 +77,7 @@ export default function Women() {
 
     return (
         <>
-            <Breadcrumbs currentPage="Women" />
+            <Breadcrumbs currentPage="Men" />
             <div className="breadcrumbs-two">
                 <div className="container">
                     <div className="row">
@@ -88,6 +90,7 @@ export default function Women() {
 
             <div className="colorlib-product">
                 <div className="container">
+             
                     <div className="row">
                         <div className="col-lg-3 col-xl-3">
                             <ProductFilter onFilterChange={handleFilterChange} />
@@ -97,6 +100,7 @@ export default function Women() {
                             <ProductGrid products={filteredProducts} />
                         </div>
                     </div>
+                    
                 </div>
             </div>
 

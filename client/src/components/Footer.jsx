@@ -1,6 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTwitter, faFacebook, faLinkedin, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { Link } from 'react-router-dom';
 export default function Footer() {
     return (
         <footer id="colorlib-footer" role="contentinfo">
@@ -14,10 +15,26 @@ export default function Footer() {
                             texts. It is an almost unorthographic life.
                         </p>
                         <ul className="colorlib-social-icons">
-                            <li><a href="#" ><FontAwesomeIcon icon={faTwitter} /></a></li>
-                            <li><a href="#"><FontAwesomeIcon icon={faFacebook} /></a></li>
-                            <li><a href="#"> <FontAwesomeIcon icon={faLinkedin} /></a></li>
-                            <li><a href="#"><FontAwesomeIcon icon={faInstagram} /></a></li>
+                            <li>
+                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                                    <FontAwesomeIcon icon={faTwitter} />
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                                    <FontAwesomeIcon icon={faFacebook} />
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                                    <FontAwesomeIcon icon={faLinkedin} />
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                                    <FontAwesomeIcon icon={faInstagram} />
+                                </a>
+                            </li>
                         </ul>
                     </div>
 
@@ -36,11 +53,21 @@ export default function Footer() {
                     <div className="col footer-col colorlib-widget">
                         <h4>Need Help?</h4>
                         <ul className="colorlib-footer-links">
-                            <li><a href="#">FAQs</a></li>
-                            <li><a href="#">Shipping & Returns</a></li>
-                            <li><a href="#">Shoe Care</a></li>
-                            <li><a href="#">Size Chart</a></li>
-                            <li><a href="#">Contact Us</a></li>
+                            <li>
+                                <Link to="/faqs">FAQs</Link>
+                            </li>
+                            <li>
+                                <Link to="/shipping-returns">Shipping & Returns</Link>
+                            </li>
+                            <li>
+                                <Link to="/shoe-care">Shoe Care</Link>
+                            </li>
+                            <li>
+                                <Link to="/size-chart">Size Chart</Link>
+                            </li>
+                            <li>
+                                <Link to="/contact">Contact Us</Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -58,17 +85,17 @@ export default function Footer() {
                         </ul>
                     </div>
                 </div>
-            </div>
 
-            {/* Footer Copyright */}
-            <div className="copy">
-                <div className="row">
-                    <div className="col-sm-12 text-center">
-                        <p>
-                            <span>
-                                Copyright &copy; {new Date().getFullYear()} All rights reserved.
-                            </span>
-                        </p>
+                {/* Footer Copyright */}
+                <div className="copy">
+                    <div className="row">
+                        <div className="col-sm-12 text-center">
+                            <p>
+                                <span>
+                                    Copyright &copy; {new Date().getFullYear()} All rights reserved.
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
