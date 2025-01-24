@@ -44,8 +44,7 @@ export default function Footer() {
                         <ul className="colorlib-footer-links">
                             <li> <a href="#">Shop Men</a> </li>
                             <li> <a href="#">Shop Women</a></li>
-                            <li><a href="#">Lookbook</a></li>
-                            <li><a href="#">Sale</a></li>
+                    
                         </ul>
                     </div>
 

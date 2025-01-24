@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState ,useContext} from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate for navigation
 import Breadcrumbs from './BreadCrumbs';
+import { CartContext } from '../context/CartContext';
 
 export default function ProductDetail({setCartCount }) {
     const { id } = useParams();
@@ -18,6 +19,7 @@ export default function ProductDetail({setCartCount }) {
         const savedCart = localStorage.getItem('cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
+     const { addToCart } = useContext(CartContext);
     const images = [
         './src/assets/images/item-1.jpg',
         './src/assets/images/item-2.jpg',
@@ -85,6 +87,7 @@ export default function ProductDetail({setCartCount }) {
         setCartCount(totalQuantity);
 
         alert(`Added ${quantity} item(s) of "${product.title}" to the cart.`);
+        addToCart({ ...product, quantity: 1 })
     }
     useEffect(() => {
         async function fetchProduct() {

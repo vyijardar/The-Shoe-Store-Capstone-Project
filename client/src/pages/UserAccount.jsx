@@ -68,6 +68,9 @@ const Account = ({ token, setToken, setIsLoggedIn }) => {
         navigate("/login"); // Redirect to login page
     };
 
+    const handleCheckout = () => {
+        navigate("/checkout"); // Redirect to the checkout page
+    };
     return (
         <div className="container mt-4">
             <div className="row">
@@ -109,7 +112,9 @@ const Account = ({ token, setToken, setIsLoggedIn }) => {
                                         </li>
                                     ))}
                                 </ul>
-                                <button className="btn btn-info btn-sm">View Details</button>
+                                <button className="btn btn-primary" onClick={handleCheckout}>
+                                    Proceed to Checkout
+                                </button>
                             </div>
                         ))}
                     </div>

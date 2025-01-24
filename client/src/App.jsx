@@ -10,13 +10,16 @@ import Men from './pages/Men'
 import Women from './pages/Women'
 import ProductDetail from './components/ProductDetail'
 import ContactPage from './pages/ContactPage'
-import Checkout from './components/Checkout'
+import Checkout from './pages/Checkout'
 import UserAccount from './pages/UserAccount'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import About from './pages/About'
 import OrderConfirmation from './components/OrderConfirmation'
 import ShoeCare from "./pages/Shoecare";
+import FAQs from "./pages/FAQs";
+import ShippingAndReturns from "./pages/ShippingAndReturns";
+import SizeChart from "./pages/SizeChart";
 function App() {
     const [cartCount, setCartCount] = useState(0);
     const [token, setToken] = useState(null);
@@ -47,6 +50,9 @@ function App() {
         <Route path="/account" element={<UserAccount token={token} setToken={setToken}  />} />
         <Route path="/contact" element={<ContactPage  token={token} setToken={setToken} />} />
         <Route path="/shoe-care" element={<ShoeCare />} />
+        <Route path="/faqs" element={<FAQs />} />
+        <Route path="/shipping-returns" element={<ShippingAndReturns />} />
+        <Route path="/size-chart" element={<SizeChart />} />
       </Routes>
       <Footer/>
     </Router>
