@@ -8,7 +8,7 @@ export default function ProductDetail({setCartCount }) {
     const navigate = useNavigate(); // useNavigate hook for programmatic navigation
 
     // Initialize all states upfront
-    const [product, setProduct] = useState(null);
+    const [product, setProduct] = useState(null); 
     const [currentSlide, setCurrentSlide] = useState(0);
     const [quantity, setQuantity] = useState(1); // Added state for quantity
     const [selectedSize, setSelectedSize] = useState(null); // Added state for selected size
@@ -92,9 +92,9 @@ export default function ProductDetail({setCartCount }) {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+                const response = await fetch(`http://localhost:3000/api/products/${id}`);
                 const result = await response.json();
-                setProduct(result);
+                setProduct(result);       
             } catch (error) {
                 console.error(error);
             }
@@ -126,25 +126,22 @@ export default function ProductDetail({setCartCount }) {
             <Breadcrumbs currentPage="Product Details" />
             <div className="colorlib-product">
                 <div className="container">
+           
                     <div className="row row-pb-lg product-detail-wrap">
                         <div className="col-sm-8">
                             <div className="owl-carousel">
                                 <div className="item">
-                                    <div className="product-entry border">
-                                        <img
-                                            src={product.image}
-                                            className="img-fluid"
-                                            alt={` ${product.title}`}
-                                        />
+                                 <div className="product-entry border" key={product.id}>
+                                        <img src={product.image_url} className="img-fluid" alt={product.name}  />
                                           {/* <img
                                             src={product.image[currentSlide]}
                                             alt={` ${product.title} ${currentSlide + 1}`}
                                             className="img-fluid"
                                             onClick={() => navigate(`/${product.id}`)}
                                         /> */}
-                                    </div>
+                                    </div> 
                                 </div>
-
+                                        
                                 {/* Navigation buttons */}
                                 <button onClick={prevSlide} className="prev-button">
                                     &#10094;
@@ -158,13 +155,13 @@ export default function ProductDetail({setCartCount }) {
                         <div className="col-sm-4">
                             <div className="product-desc">
                                 {/* Product Name */}
-                                <h3>{product.title || 'Loading product name...'}</h3>
+                                <h3>{product.name || 'Loading product name...'}</h3>
                                 {/* Product Price */}
                                 <p className="price">
                                     <span>{product.price ? `$${product.price}` : 'Loading price...'}</span>
-                                    <span className="rate">
+                                    {/* <span className="rate">
                                         ({product.rating.rate || '0'} Rating, {product.rating.count || '0'} Reviews)
-                                    </span>
+                                    </span> */}
                                 </p>
                                 {/* Product Description */}
                                 <p>{product.description || 'Loading description...'}</p>
@@ -248,6 +245,7 @@ export default function ProductDetail({setCartCount }) {
                             </div>
                         </div>
                     </div>
+            
                 </div>
             </div>
       

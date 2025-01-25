@@ -13,13 +13,13 @@ export default function ProductGrid({ products }) {
                     <div className="product-entry border">
                         {/* Link to product details page */}
                         <Link to={`/products/${product.id}`} className="prod-img">
-                            <img src={product.image} className="img-fluid" alt={product.title} />
+                            <img src={product.image_url} className="img-fluid" alt={product.name} />
                         </Link>
 
                         <div className="desc">
                             <h2>
                                 {/* Title and link to the product detail page */}
-                                <Link to={`/products/${product.id}`}>{product.title}</Link>
+                                <Link to={`/products/${product.id}`}>{product.name}</Link>
                             </h2>
                             <span className="price">${product.price}</span>
                         </div>

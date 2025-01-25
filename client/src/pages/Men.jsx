@@ -17,9 +17,10 @@ export default function Men() {
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch("https://fakestoreapi.com/products");
-                const result = await response.json();
+                const res = await fetch("http://localhost:3000/api/products");
+                const result = await res.json();
                 setProducts(result);
+                console.log(result)
                 setFilteredProducts(result);
             } catch (error) {
                 console.error('Error fetching products:', error);
