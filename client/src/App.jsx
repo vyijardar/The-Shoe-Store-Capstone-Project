@@ -32,31 +32,31 @@ function App() {
   }, []);
   return (
     <div id="page">
-       <CartProvider>
-      <Router>
-      <Navigations cartCount={cartCount} token={token}
-            setToken={setToken} setisLoggedIn={setisLoggedIn}  />
-      <Routes>
-        <Route path="/" element={<Home token={token} setToken={setToken}  />} /> 
-        <Route path="/men" element={<Men  token={token} setToken={setToken} />} />
-        <Route path="/women" element={<Women token={token} setToken={setToken}  />} />
-        <Route path='/products/:id' element={<ProductDetail  setCartCount={setCartCount}/>} token={token} setToken={setToken} ></Route>
-        <Route path="/cart" element={<Cartpage token={token} setToken={setToken}  />} />
-        <Route path="/login" element={<Login  token={token} setToken={setToken}  setisLoggedIn={setisLoggedIn}  />} />
-        <Route path="/signup" element={<SignUp token={token} setToken={setToken}  />} />                  
-        <Route path="/about" element={<About token={token} setToken={setToken}  />} />
-        <Route path="/checkout" element={<Checkout token={token} setToken={setToken}  />} />
-        <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken}  />} />
-        <Route path="/account" element={<UserAccount token={token} setToken={setToken}  />} />
-        <Route path="/contact" element={<ContactPage  token={token} setToken={setToken} />} />
-        <Route path="/shoe-care" element={<ShoeCare />} />
-        <Route path="/faqs" element={<FAQs />} />
-        <Route path="/shipping-returns" element={<ShippingAndReturns />} />
-        <Route path="/size-chart" element={<SizeChart />} />
-      </Routes>
-      <Footer/>
-    </Router>
-    </CartProvider>
+      <CartProvider>
+        <Router>
+          <Navigations cartCount={cartCount} token={token}
+            setToken={setToken} setisLoggedIn={setisLoggedIn} />
+          <Routes>
+            <Route path="/" element={<Home token={token} setToken={setToken} />} />
+            <Route path="/men" element={<Men token={token} setToken={setToken} />} />
+            <Route path="/women" element={<Women token={token} setToken={setToken} />} />
+            <Route path='/products/:id' element={<ProductDetail setCartCount={setCartCount} />} token={token} setToken={setToken} ></Route>
+            <Route path="/cart" element={<Cartpage token={token} setToken={setToken} />} />
+            <Route path="/login" element={<Login token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
+            <Route path="/signup" element={<SignUp token={token} setToken={setToken} />} />
+            <Route path="/about" element={<About token={token} setToken={setToken} />} />
+            <Route path="/checkout" element={<Checkout token={token} setToken={setToken} />} />
+            <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken} />} />
+            <Route path="/account" element={<UserAccount token={token} setToken={setToken} />} />
+            <Route path="/contact" element={<ContactPage token={token} setToken={setToken} />} />
+            <Route path="/shoe-care" element={<ShoeCare />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/shipping-returns" element={<ShippingAndReturns />} />
+            <Route path="/size-chart" element={<SizeChart />} />
+          </Routes>
+          <Footer />
+        </Router>
+      </CartProvider>
     </div>
     
   )

@@ -28,12 +28,17 @@ const createTables = async () => {
     price DECIMAL(10, 2) NOT NULL,
     brand VARCHAR(255),
     category VARCHAR(255),
+    gender VARCHAR(10) CHECK (gender IN ('men', 'women', 'unisex')),
     size JSON,
     color VARCHAR(50),
     stock INT DEFAULT 0,
     image_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    ALTER TABLE products 
+    DROP COLUMN image_url, 
+    ADD COLUMN image_urls TEXT[];
+
     `;
     await client.query(SQL);
 
@@ -46,12 +51,12 @@ const createUser = async ({ name, email, password, phone, address, role = 'custo
     return response.rows[0];
 }
 
-const  createProduct = async ({name, description, price, brand, category, size, color, stock, image_url}) => {
-    const SQL = `INSERT INTO products(id, name, description, price, brand, category, size, color, stock, image_url, created_at, updated_at)
-                values($1, $2, $3, $4, $5, $6, $7,$8, $9, $10, NOW(), NOW()) RETURNING *`;
-    const response = await client.query(SQL,[uuid.v4(), name,  description, price, brand, category, JSON.stringify(size), color, stock, image_url]);
+const  createProduct = async ({name, description, price, brand, category,gender, size, color, stock, image_urls}) => {
+    const SQL = `INSERT INTO products(id, name, description, price, brand, category, gender, size, color, stock, image_urls, created_at, updated_at)
+                values($1, $2, $3, $4, $5, $6, $7,$8, $9, $10,$11, NOW(), NOW()) RETURNING *`;
+    const response = await client.query(SQL,[uuid.v4(), name,  description, price, brand, category,gender, JSON.stringify(size), color, stock, image_urls]);
      // return products.rows;
-   return response.rows;
+     return response.rows[0]; 
 }
 
 const fetchUsers = async () => {
@@ -64,7 +69,7 @@ const fetchUsers = async () => {
   
   const fetchProducts = async () => {
     const SQL = `
-      SELECT * FROM products;
+      SELECT * FROM products LIMIT 8;
     `;
     const response = await client.query(SQL);
     return response.rows;
@@ -79,6 +84,8 @@ const fetchSingleProduct = async (id) => {
       throw error;
   }
 };
+
+
 const deleteProduct = async ({ user_id, id }) => {
   const SQL = `
     DELETE FROM products WHERE user_id=$1 AND id=$2
@@ -93,5 +100,6 @@ module.exports = {
     fetchUsers,
     fetchProducts,
     fetchSingleProduct,
-    deleteProduct
+    deleteProduct,
+    
 };

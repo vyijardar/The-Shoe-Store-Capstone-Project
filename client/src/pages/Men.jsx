@@ -11,19 +11,25 @@ import men2 from '../assets/images/item-11.jpg';
 export default function Men() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]); 
-   
+    const [category, setCategory] = useState("Men"); 
 
     // Fetch products from API
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const res = await fetch("http://localhost:3000/api/products");
-                const result = await res.json();
+                const response = await fetch("http://localhost:3001/api/products/men");
+                const result = await response.json();
+              
+                console.log("Fetched Data:", result); // Log API response
+
+                if (!Array.isArray(result)) {
+                    throw new Error("Invalid response format: Expected an array");
+                }
                 setProducts(result);
-                console.log(result)
                 setFilteredProducts(result);
             } catch (error) {
                 console.error('Error fetching products:', error);
+                setProducts([])
             }
         }
         fetchProducts();
@@ -50,14 +56,16 @@ export default function Men() {
             filtered = filtered.filter((product) => product.price <= filters.maxPrice);
         }
         if (filters.brand) {
-            filtered = filtered.filter((product) => product.title.includes(filters.brand));
+            filtered = filtered.filter((product) => product.name.includes(filters.brand));
         }
         if (filters.size) {
             filtered = filtered.filter((product) => product.size === filters.size); // Assuming size is a property in the product object
         }
-        if (filters.colors && filters.colors.length > 0) {
-            filtered = filtered.filter((product) => filters.colors.includes(product.color)); // Assuming color is a property in the product object
-        }
+         if (filters.colors && filters.colors.length > 0) {
+                filtered = filtered.filter((product) => 
+                    filters.colors.some(color => product.color.toLowerCase().includes(color.toLowerCase()))
+                );  // Check if product color matches any of the selected colors
+            }
         if (filters.width) {
             filtered = filtered.filter((product) => product.width === filters.width); // Assuming width is a property in the product object
         }
@@ -83,7 +91,7 @@ export default function Men() {
                 <div className="container">
                     <div className="row">
                         <div className="col">
-                            <h2>Men's</h2>
+                            <h2>{category}'s Shoes</h2>
                         </div>
                     </div>
                 </div>
@@ -156,3 +164,4 @@ export default function Men() {
         </>
     );
 }
+

@@ -1,4 +1,4 @@
-import React,{useEffect} from 'react';
+import React,{useEffect,useContext} from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../css/icomoon.css';
 import '../css/ionicons.min.css';
@@ -6,13 +6,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../css/style.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faShoppingCart, faSignInAlt, faUserPlus, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faShoppingCart, faSignInAlt, faUserPlus, faSignOutAlt, faSearch } from '@fortawesome/free-solid-svg-icons';
 import logo from '../assets/logo1.png';
+import { CartContext } from "../context/CartContext";
 
-export default function Navigation({ cartCount, token, setToken, setisLoggedIn }) {
+export default function Navigation({ token, setToken, setisLoggedIn }) {
     const location = useLocation();
     const navigate = useNavigate();
-
+    const { totalItems } = useContext(CartContext);
     // Check if the current path matches the link
     const isActive = (path) => location.pathname === path;
 
@@ -42,6 +43,7 @@ export default function Navigation({ cartCount, token, setToken, setisLoggedIn }
             setisLoggedIn(true); // User is logged in
         }
     }, [token, setisLoggedIn]);
+    console.log("Navbar rendered. Total Items:", totalItems);
     return (
         <nav className="colorlib-nav" role="navigation">
             <div className="top-header ">
@@ -51,7 +53,6 @@ export default function Navigation({ cartCount, token, setToken, setisLoggedIn }
                     </div>
                 </div>
             </div>
-
             {/* Top Menu */}
             <div className="top-menu">
                 <div className="container">
@@ -64,19 +65,13 @@ export default function Navigation({ cartCount, token, setToken, setisLoggedIn }
                                 </Link>
                             </div>
                         </div>
-
                         {/* Search Section */}
                         <div className="col-sm-5 col-md-3">
                             <form action="#" onSubmit={handleSubmit} className="search-wrap">
                                 <div className="form-group">
-                                    <input
-                                        type="search"
-                                        className="form-control search"
-                                        placeholder="Search"
-                                        onChange={handleChange}
-                                    />
+                                    <input className="form-control search" type="search" placeholder="Search" onChange={handleChange} />
                                     <button className="btn btn-primary submit-search text-center" type="submit">
-                                        <i className="icon-search"></i>
+                                        <FontAwesomeIcon icon={faSearch} />
                                     </button>
                                 </div>
                             </form>
@@ -107,7 +102,7 @@ export default function Navigation({ cartCount, token, setToken, setisLoggedIn }
                                     {/* Cart & Account Links */}
                                     <li className={isActive('/cart') ? 'active cart' : 'cart'}>
                                         <Link to="/cart">
-                                            <FontAwesomeIcon icon={faShoppingCart} /> Cart [{cartCount}]
+                                            <FontAwesomeIcon icon={faShoppingCart} /> Cart [{totalItems}]
                                         </Link>
                                     </li>
                                     <li className={isActive('/account') ? 'active cart' : 'cart'}>
@@ -143,7 +138,7 @@ export default function Navigation({ cartCount, token, setToken, setisLoggedIn }
                                     {/* Cart & Account Links */}
                                     <li className={isActive('/cart') ? 'active cart' : 'cart'}>
                                         <Link to="/cart">
-                                            <FontAwesomeIcon icon={faShoppingCart} /> Cart [{cartCount}]
+                                            <FontAwesomeIcon icon={faShoppingCart} /> Cart [{totalItems}]
                                         </Link>
                                     </li>
                                     <li className={isActive('/signup') ? 'active cart' : 'cart'}>

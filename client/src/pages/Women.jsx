@@ -10,12 +10,13 @@ import men2 from '../assets/images/item-11.jpg';
 export default function Women() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
-
+    const [category, setCategory] = useState("Women"); 
+    
     // Fetch products from API
     useEffect(() => {
         async function fetchProducts() {
             try {
-                const response = await fetch("https://fakestoreapi.com/products/category/jewelery");
+                const response = await fetch("http://localhost:3001/api/products/women");
                 const result = await response.json();
                 setProducts(result);
                 setFilteredProducts(result);
@@ -47,7 +48,7 @@ export default function Women() {
             filtered = filtered.filter((product) => product.price <= filters.maxPrice);
         }
         if (filters.brand) {
-            filtered = filtered.filter((product) => product.title.includes(filters.brand));
+            filtered = filtered.filter((product) => product.name.includes(filters.brand));
         }
         if (filters.size) {
             filtered = filtered.filter((product) => product.size === filters.size); // Assuming size is a property in the product object
@@ -80,7 +81,7 @@ export default function Women() {
                 <div className="container">
                     <div className="row">
                         <div className="col">
-                            <h2>Women's</h2>
+                            <h2>{category}'s Shoes</h2>
                         </div>
                     </div>
                 </div>

@@ -1,26 +1,49 @@
-import React, { createContext, useState ,useContext} from 'react';
+import React, { createContext, useState, useContext,useEffect } from 'react';
 
 export const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    // Load cart from local storage (for persistence)
+    const storedCart = localStorage.getItem("cart");
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+  // Save cart to local storage when updated
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
-  // Function to add an item to the cart
-  const addToCart = (item) => {
-    setCartItems((prev) => {
-      const existingItem = prev.find((cartItem) => cartItem.id === item.id);
+  // // Function to add an item to the cart
+  // const addToCart = (item) => {
+  //   setCartItems((prev) => {
+  //     const existingItem = prev.find((cartItem) => cartItem.id === item.id);
+  //     if (existingItem) {
+  //       // If the item already exists, update its quantity
+  //       return prev.map((cartItem) =>
+  //         cartItem.id === item.id
+  //           ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+  //           : cartItem
+  //       );
+  //     } else {
+  //       // If the item is new, add it to the cart
+  //       return [...prev, item];
+  //     }
+  //   });
+  // };
+
+  // Function to add item to cart
+  const addToCart = (product) => {
+    setCartItems((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
-        // If the item already exists, update its quantity
-        return prev.map((cartItem) =>
-          cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
-            : cartItem
+        return prevCart.map((item) =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
         // If the item is new, add it to the cart
-        return [...prev, item];
+        return [...prevCart, { ...product, quantity: 1 }];
       }
     });
   };
@@ -38,9 +61,10 @@ export function CartProvider({ children }) {
   };
 
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, total, addToCart, updateItemQuantity, removeItem }}>
+    <CartContext.Provider value={{ cartItems, total, totalItems, addToCart, updateItemQuantity, removeItem }}>
       {children}
     </CartContext.Provider>
   );
