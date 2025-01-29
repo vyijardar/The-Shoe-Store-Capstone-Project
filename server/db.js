@@ -177,7 +177,6 @@ module.exports = {
   fetchUsers,
   fetchProducts,
   fetchSingleProduct,
-  createProduct,
   deleteProduct,
   updateProduct,
   authenticate,

@@ -6,7 +6,6 @@ const {
     fetchUsers,
     fetchProducts,
     fetchSingleProduct,
-    createProduct,
     deleteProduct,
     authenticate,
     findUserWithToken,
