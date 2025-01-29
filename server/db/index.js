@@ -1,4 +1,3 @@
-
 const {
     client,
     createTables,
@@ -7,10 +6,16 @@ const {
     fetchUsers,
     fetchProducts,
     fetchSingleProduct,
-    deleteProduct
+    createProduct,
+    deleteProduct,
+    authenticate,
+    findUserWithToken,
+    updateProduct
 } = require('../db');
+
 const express = require('express');
 const app = express();
+const { checkAdmin } = require('../middleware/auth');
 app.use(express.json());
 
 const cors = require('cors');
@@ -20,6 +25,47 @@ app.use(require('morgan')('dev'))
 const path = require('path');
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')));
 app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets')));
+
+
+const isLoggedIn = async (req, res, next) => {
+    try {
+        req.user = await findUserWithToken(req.headers.authorization);
+        next();
+    } catch (ex) {
+        next(ex);
+    }
+}
+
+app.post('/api/auth/login', async (req, res, next) => {
+    try {
+        // res.send(await authenticate(req.body));
+        const { email, password } = req.body;
+        const { token } = await authenticate({ email, password });
+        res.json({ token });
+    }
+    catch (ex) {
+        next(ex);
+    }
+});
+
+app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
+    try {
+        res.send(await findUserWithToken(req.headers.authorization));
+    }
+    catch (ex) {
+        next(ex);
+    }
+});
+
+// Log out the user (client should handle token removal)
+app.post('/api/auth/logout', async (req, res, next) => {
+    try {
+        res.json({ message: 'Logged out successfully' });
+    }
+    catch (ex) {
+        next(ex);
+    }
+});
 
 app.get('/api/users', async (req, res, next) => {
     try {
@@ -32,7 +78,7 @@ app.get('/api/users', async (req, res, next) => {
 
 app.get('/api/products', async (req, res, next) => {
     try {
-        
+
         res.send(await fetchProducts());
         res.json(products);
     }
@@ -40,9 +86,9 @@ app.get('/api/products', async (req, res, next) => {
         next(ex);
     }
 });
-app.get("/api/products/men", async (req, res,next) => {
+app.get("/api/products/men", async (req, res, next) => {
     try {
-     
+
         const result = await client.query("SELECT * FROM products WHERE gender = 'men'");
 
         if (!result.rows || result.rows.length === 0) {
@@ -58,7 +104,6 @@ app.get("/api/products/men", async (req, res,next) => {
 
 app.get("/api/products/women", async (req, res, next) => {
     try {
-      
         const result = await client.query("SELECT * FROM products WHERE gender = 'women'");
         res.json(result.rows);
     } catch (ex) {
@@ -80,29 +125,40 @@ app.get('/api/products/:id', async (req, res, next) => {
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
 });
-app.post('/api/products/addproduct', async (req, res, next) => {
+app.post('/api/products/addproduct',checkAdmin, async (req, res, next) => {
     try {
         const { name, description, price, brand, category, gender, size, color, stock, image_urls } = req.body;
 
         if (!name || !price || !category) {
             return res.status(400).json({ error: 'Name, price, and category are required.' });
         }
-
         const product = await createProduct({ name, description, price, brand, category, gender, size, color, stock, image_urls });
-
         res.status(201).json(product);
     } catch (ex) {
         next(ex);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+// Update an existing product (Admin only)
+app.put('/api/products/:id', checkAdmin, async (req, res, next) => {
+    const { id } = req.params;
+    const { name, description, price, image_urls, stock } = req.body;
 
-app.delete('/api/users/:user_id/products/:id', async (req, res, next) => {
+    // Input validation (optional, you can enhance this)
+    if (!name || !price || !stock) {
+        return res.status(400).json({ message: 'Name, price, and stock are required.' });
+    }
     try {
-        await deleteProduct({
-            user_id: req.params.user_id,
-            id: req.params.id,
-        });
+        const product = await updateProduct(id, { name, description, price, image_urls, stock });
+        res.json(product); 
+    } catch (err) {
+        next(err); 
+    }
+});
+app.delete('/api/products/:id',checkAdmin, async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        await deleteProduct({ id });
         res.sendStatus(204);
     } catch (ex) {
         next(ex)
@@ -159,10 +215,10 @@ const init = async () => {
             brand: "Nike",
             category: "Casual Sneakers",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Grey",
             stock: 50,
-            image_urls:  [
+            image_urls: [
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/333b552e-d034-4356-a452-290940b9b544/NIKE+C1TY.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/48e83974-41a3-4645-a656-e26ce3fcbafa/NIKE+C1TY.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/76065f6b-f429-4b8a-8a18-38b13cb444b0/NIKE+C1TY.png',
@@ -176,10 +232,10 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Red",
             stock: 35,
-            image_urls:  [
+            image_urls: [
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/3f69625b-436f-4fa4-b1b5-a44b1d01e924/PEGASUS+PLUS.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/2526ce66-3ed8-4d07-ad5e-0d9919f62550/PEGASUS+PLUS.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/6e8a5585-c45c-4f4d-8338-4964437aadc7/PEGASUS+PLUS.png',
@@ -193,10 +249,10 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Blue",
             stock: 20,
-            image_urls:  [
+            image_urls: [
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/004e73a9-1210-4366-9660-ab47dec9ee92/NIKE+AIR+ZOOM+STRUCTURE+25.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/c0300458-237e-4b92-9bcf-1f08480539a8/NIKE+AIR+ZOOM+STRUCTURE+25.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/62a92143-b32f-4850-9847-6419ac519b0b/NIKE+AIR+ZOOM+STRUCTURE+25.png',
@@ -210,7 +266,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "White",
             stock: 18,
             image_urls: [
@@ -227,9 +283,9 @@ const init = async () => {
             brand: "Nike",
             category: "Casual Sneakers",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Pink",
-            stock: 50,          
+            stock: 50,
             image_urls: [
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/bdcf3baa-788b-49bf-89ab-6a1369f89853/W+NIKE+DUNK+LOW+NEXT+NATURE.png',
                 'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/1f36c17b-f981-46ca-9495-52771be4350b/W+NIKE+DUNK+LOW+NEXT+NATURE.png',
@@ -244,7 +300,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "White",
             stock: 35,
             image_urls: [
@@ -261,7 +317,7 @@ const init = async () => {
             brand: "Clarks",
             category: "Casual Shoes",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Brown",
             stock: 10,
             image_urls: [
@@ -278,7 +334,7 @@ const init = async () => {
             brand: "Puma",
             category: "Casual Shoes",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Black",
             stock: 20,
             image_urls: [
@@ -295,7 +351,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Red",
             stock: 15,
             image_urls: [
@@ -312,7 +368,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Red",
             stock: 17,
             image_urls: [
@@ -329,7 +385,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "White",
             stock: 27,
             image_urls: [
@@ -346,7 +402,7 @@ const init = async () => {
             brand: "Adidas",
             category: "Soccer Shoes",
             gender: 'men',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Light Pink",
             stock: 27,
             image_urls: [
@@ -363,7 +419,7 @@ const init = async () => {
             brand: "Adidas",
             category: "Casual Shoes",
             gender: 'women',
-            size: [6,6.5,7,7.5,8,8.5,9.5,10,10.5,11,11.5,12,12.5,13,13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Core Black ",
             stock: 7,
             image_urls: [
