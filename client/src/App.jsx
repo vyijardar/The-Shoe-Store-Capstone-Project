@@ -1,59 +1,68 @@
-import React,{useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import './App.css'
-import { CartProvider } from './context/CartContext';
-import Cartpage from './components/Cartpage';
-import Home from './pages/Home';
-import Navigations from './components/Navigations'
-import Footer from './components/Footer'
-import Men from './pages/Men'
-import Women from './pages/Women'
-import ProductDetail from './components/ProductDetail'
-import ContactPage from './pages/ContactPage'
-import Checkout from './components/Checkout'
-import UserAccount from './pages/UserAccount'
-import Login from './pages/Login'
-import SignUp from './pages/SignUp'
-import About from './pages/About'
-import OrderConfirmation from './components/OrderConfirmation'
-import ShoeCare from "./pages/Shoecare";
+import CartProvider from "./context/CartContext";
+import Navigations from "./components/Navigations";
+import Home from "./pages/Home";
+import Men from "./pages/Men";
+import Women from "./pages/Women";
+import ProductDetail from "./components/ProductDetail";
+import Cartpage from "./components/Cartpage";
+import ContactPage from "./pages/ContactPage";
+import Checkout from "./components/Checkout";
+import Login from "./pages/Login";
+import Signup from "./pages/SignUp";
+import AdminLogin from "./pages/admin/Login";
+import DashboardLayout from "./pages/admin/DashboardLayout";
+import AdminProducts from "./pages/admin/Products";
+import AdminUsers from "./pages/admin/Users";
+
 function App() {
-    const [cartCount, setCartCount] = useState(0);
-    const [token, setToken] = useState(null);
-    const [isLoggedIn, setisLoggedIn] = useState(false);
-    // Initialize the cart count from localStorage on component mount
-    useEffect(() => {
-      const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-      const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
-      setCartCount(totalQuantity);
+  const [cartCount, setCartCount] = useState(0);
+  const [token, setToken] = useState(localStorage.getItem("adminToken"));
+
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
+    setCartCount(totalQuantity);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    setToken(null);
+    window.location.href = "/admin/login";
+  };
+
   return (
     <div id="page">
-       <CartProvider>
-      <Router>
-      <Navigations cartCount={cartCount} token={token}
-            setToken={setToken} setisLoggedIn={setisLoggedIn}  />
-      <Routes>
-        <Route path="/" element={<Home token={token} setToken={setToken}  />} /> 
-        <Route path="/men" element={<Men  token={token} setToken={setToken} />} />
-        <Route path="/women" element={<Women token={token} setToken={setToken}  />} />
-        <Route path='/products/:id' element={<ProductDetail  setCartCount={setCartCount}/>} token={token} setToken={setToken} ></Route>
-        <Route path="/cart" element={<Cartpage token={token} setToken={setToken}  />} />
-        <Route path="/login" element={<Login  token={token} setToken={setToken}  setisLoggedIn={setisLoggedIn}  />} />
-        <Route path="/signup" element={<SignUp token={token} setToken={setToken}  />} />                  
-        <Route path="/about" element={<About token={token} setToken={setToken}  />} />
-        <Route path="/checkout" element={<Checkout token={token} setToken={setToken}  />} />
-        <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken}  />} />
-        <Route path="/account" element={<UserAccount token={token} setToken={setToken}  />} />
-        <Route path="/contact" element={<ContactPage  token={token} setToken={setToken} />} />
-        <Route path="/shoe-care" element={<ShoeCare />} />
-      </Routes>
-      <Footer/>
-    </Router>
-    </CartProvider>
+      <CartProvider cartCount={cartCount} token={token} setToken={setToken}>
+        <Router>
+          <Navigations cartCount={cartCount} token={token} setToken={setToken} />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/men" element={<Men />} />
+            <Route path="/women" element={<Women />} />
+            <Route path="/products/:id" element={<ProductDetail setCartCount={setCartCount} />} />
+            <Route path="/cart" element={<Cartpage />} />
+            <Route path="/login" element={<Login setToken={setToken} />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<ContactPage />} />
+            <Route path="/checkout" element={<Checkout />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin setToken={setToken} />} />
+            <Route
+              path="/admin"
+              element={<DashboardLayout />}
+            >
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="users" element={<AdminUsers />} />
+            </Route>
+          </Routes>
+        </Router>
+      </CartProvider>
     </div>
-    
-  )
+  );
 }
 
-export default App
+export default App;

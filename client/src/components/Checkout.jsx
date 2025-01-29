@@ -1,87 +1,190 @@
-import React from "react";
-// import "../styles/Checkout.css";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { CartContext } from "../context/CartContext";
 
-const Checkout = ({ cartItems }) => {
+export default function Checkout() {
+  const [step, setStep] = useState(1);
+  const [shippingData, setShippingData] = useState({
+    name: "",
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "USA",
+  });
+  const [billingData, setBillingData] = useState({
+    name: "",
+    street: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "USA",
+  });
+  const [useSameAddress, setUseSameAddress] = useState(true);
+  const [cardNumber, setCardNumber] = useState("");
+
+  const { cartItems, total } = useContext(CartContext);
   const navigate = useNavigate();
 
-  const handlePlaceOrder = () => {
-    navigate("/order-confirmation");
+  useEffect(() => {
+    if (useSameAddress) {
+      setBillingData({ ...shippingData });
+    }
+  }, [useSameAddress, shippingData]);
+
+  const handleNextStep = () => setStep((prev) => prev + 1);
+  const handlePreviousStep = () => setStep((prev) => prev - 1);
+
+  const handleOrderComplete = () => {
+    alert("Order placed successfully!");
+    navigate("/thank-you");
   };
 
   return (
-    <>
-      <div className="checkout-page">
-        <div className="billing-section">
-          <h2>Billing Details</h2>
-          <form>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
-                <input type="text" id="firstName" placeholder="Your First Name" />
-              </div>
-              <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
-                <input type="text" id="lastName" placeholder="Your Last Name" />
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="address">Address</label>
-              <input type="text" id="address" placeholder="Enter Your Address" />
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="city">City</label>
-                <input type="text" id="city" placeholder="Town/City" />
-              </div>
-              <div className="form-group">
-                <label htmlFor="state">State/Province</label>
-                <input type="text" id="state" placeholder="State/Province" />
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="zip">ZIP/Postal Code</label>
-              <input type="text" id="zip" placeholder="ZIP/Postal Code" />
-            </div>
-            <div className="form-group">
-              <h3>Payment Method</h3>
-              <div>
-                <label>
-                  <input type="radio" name="payment" value="creditCard" /> Credit
-                  Card
-                </label>
-              </div>
-              <div>
-                <label>
-                  <input type="radio" name="payment" value="paypal" /> PayPal
-                </label>
-              </div>
-            </div>
+    <div className="checkout-container">
+      {step === 1 && (
+        <div className="checkout-step">
+          <h2>Shipping Information</h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleNextStep();
+            }}
+          >
+            <label>
+              Name:
+              <input
+                type="text"
+                value={shippingData.name}
+                onChange={(e) =>
+                  setShippingData({ ...shippingData, name: e.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              Street:
+              <input
+                type="text"
+                value={shippingData.street}
+                onChange={(e) =>
+                  setShippingData({ ...shippingData, street: e.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              City:
+              <input
+                type="text"
+                value={shippingData.city}
+                onChange={(e) =>
+                  setShippingData({ ...shippingData, city: e.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              State:
+              <input
+                type="text"
+                value={shippingData.state}
+                onChange={(e) =>
+                  setShippingData({ ...shippingData, state: e.target.value })
+                }
+                required
+              />
+            </label>
+            <label>
+              Postal Code:
+              <input
+                type="text"
+                value={shippingData.postalCode}
+                onChange={(e) =>
+                  setShippingData({
+                    ...shippingData,
+                    postalCode: e.target.value,
+                  })
+                }
+                required
+              />
+            </label>
+            <button type="submit">Next</button>
           </form>
         </div>
-        <div className="cart-total-section">
-          <h2>Cart Total</h2>
-          <ul>
-            <li>
-              <span>Subtotal</span>
-              <span>$0.00</span>
-            </li>
-            <li>
-              <span>Shipping</span>
-              <span>$0.00</span>
-            </li>
-            <li>
-              <span>Total</span>
-              <span>$0.00</span>
-            </li>
-          </ul>
-          <button type="button" onClick={handlePlaceOrder}>
-            Place Order
-          </button>
-        </div>
-      </div>
-    </>
-  );
-};
+      )}
 
-export default Checkout;
+      {step === 2 && (
+        <div className="checkout-step">
+          <h2>Payment Information</h2>
+          <label>
+            <input
+              type="checkbox"
+              checked={useSameAddress}
+              onChange={(e) => setUseSameAddress(e.target.checked)}
+            />
+            Use same address as shipping
+          </label>
+          {!useSameAddress && (
+            <div>
+              <label>
+                Name:
+                <input
+                  type="text"
+                  value={billingData.name}
+                  onChange={(e) =>
+                    setBillingData({ ...billingData, name: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label>
+                Street:
+                <input
+                  type="text"
+                  value={billingData.street}
+                  onChange={(e) =>
+                    setBillingData({ ...billingData, street: e.target.value })
+                  }
+                  required
+                />
+              </label>
+              {/* Add remaining billing fields */}
+            </div>
+          )}
+          <label>
+            Card Number:
+            <input
+              type="text"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              required
+            />
+          </label>
+          <div>
+            <button onClick={handlePreviousStep}>Back</button>
+            <button onClick={handleNextStep}>Next</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="checkout-step">
+          <h2>Order Review</h2>
+          {cartItems.map((item) => (
+            <div key={item.id}>
+              <p>{item.name}</p>
+              <p>Qty: {item.quantity}</p>
+              <p>Price: ${item.price.toFixed(2)}</p>
+            </div>
+          ))}
+          <p>Total: ${total.toFixed(2)}</p>
+          <div>
+            <button onClick={handlePreviousStep}>Back</button>
+            <button onClick={handleOrderComplete}>Place Order</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

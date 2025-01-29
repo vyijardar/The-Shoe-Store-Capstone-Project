@@ -12864,3 +12864,72 @@ input[type="text"] {
 .cart-summary button:hover {
     background-color: #218838;
 }
+
+/* ====================
+   Modal Styles
+==================== */
+/* Modal styles */
+.modal {
+    overflow: scroll !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+  }
+  
+  .modal-content h3 {
+    margin-top: 0;
+  }
+  
+  .modal-content button {
+    margin-right: 10px;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .users-table th,
+  .users-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  .users-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .action-buttons button {
+    margin: 0 5px;
+    padding: 5px 10px;
+  }
+
+  .view-users table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.view-users th,
+.view-users td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.view-users th {
+    background-color: #f4f4f4;
+}
