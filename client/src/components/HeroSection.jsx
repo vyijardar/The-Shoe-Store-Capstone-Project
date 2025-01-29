@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 import '../css/HeroSection.css';
 
 // Replace these with your actual image URLs or imported images
@@ -20,7 +21,7 @@ function HeroSection() {
     // Clean up on unmount to avoid memory leaks
     return () => clearInterval(interval);
   }, []);
-
+ const navigate = useNavigate();
   return (
     <section
       className="hero-section"
@@ -36,8 +37,8 @@ function HeroSection() {
           tempor imperdiet arcu arcu ut nunc in dictum mauris at ut.
         </p>
         <div className="hero-buttons">
-          <button>Shop Men</button>
-          <button>Shop Women</button>
+          <button onClick={()=>{navigate('/men')}}>Shop Men</button>
+          <button onClick={()=>{navigate('/women')}}>Shop Women</button>
         </div>
       </div>
     </section>

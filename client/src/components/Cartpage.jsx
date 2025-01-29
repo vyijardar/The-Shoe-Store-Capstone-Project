@@ -1,13 +1,16 @@
 import React, { useContext } from 'react';
 import { CartContext } from '../context/CartContext';
 import '../css/Cartpage.css';
-
+import { useNavigate, Link } from 'react-router-dom';
 function Cartpage() {
   const { cartItems, total, updateItemQuantity, removeItem } = useContext(CartContext);
-
+  const navigate = useNavigate();
   // Example: a function to format currency neatly
-  const formatPrice = (price) => `$${price.toFixed(2)}`;
-
+  const formatPrice = (price) => {
+    const numericPrice = Number(price) || 0; // Ensure it's a valid number
+    return `$${numericPrice.toFixed(2)}`;
+  };
+  
   return (
     <div className="colorlib-product">
       <div className="container">
@@ -20,7 +23,7 @@ function Cartpage() {
             {cartItems.length === 0 ? (
               <div className="empty-cart">
                 <p>Your cart is empty!</p>
-                <a href="/shop" className="continue-shopping">Continue Shopping</a>
+                <Link to='/' className="continue-shopping"> Continue Shopping</Link>
               </div>
             ) : (
               <>
@@ -64,10 +67,10 @@ function Cartpage() {
 
                 <div className="cart-summary">
                   <h2>Total: {formatPrice(total)}</h2>
-                  <button className="checkout-btn">Proceed to Checkout</button>
+                  <button className="checkout-btn" onClick={() => { navigate('/checkout') }}>Proceed to Checkout</button>
                 </div>
 
-                <a href="/Home" className="continue-shopping">Continue Shopping</a>
+                <Link to='/' className="continue-shopping"> Continue Shopping</Link>
               </>
             )}
           </div>

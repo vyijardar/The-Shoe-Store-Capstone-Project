@@ -1,151 +1,145 @@
+import React, { useState, useEffect } from "react";
 
-import React, { useState } from "react";
-
-const ProductFilter = ({ onFilterChange }) => {
+export default function ProductFilter({ onFilterChange }) {
+  const [products, setProducts] = useState([]);
   const [category, setCategory] = useState('');
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(Infinity);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [brand, setBrand] = useState('');
   const [size, setSize] = useState('');
-  const [color, setColor] = useState('');
   const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedWidth, setSelectedWidth] = useState(null);
-  // Handle color selection toggle
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/api/products");
+        const result = await response.json();
+        console.log("Fetched products:", result); // Debugging line
+        setProducts(result);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Extract unique filter options
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
+  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))];
+  const sizes = [...new Set(products.flatMap((p) => p.size || []))];
+  const colors = ["Black", "White", "Red", "Blue", "Green", "Brown"];
+
+  // Toggle color selection
   const toggleColor = (color) => {
-    if (selectedColors.includes(color)) {
-      setColor(selectedColors.filter((c) => c !== color));
-    } else {
-      setColor([...selectedColors, color]);
-    }
+    setSelectedColors((prevColors) =>
+      prevColors.includes(color) ? prevColors.filter((c) => c !== color) : [...prevColors, color]
+    );
   };
+
+  // **Handles applying multiple filters together**
   const handleFilterUpdate = () => {
     onFilterChange({
-      category,
-      minPrice: parseFloat(minPrice) || 0,
-      maxPrice: parseFloat(maxPrice) || Infinity,
-      brand,
-      size,
-      color,
+      category: category || null,
+      minPrice: minPrice ? parseFloat(minPrice) : 0,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : Infinity,
+      brand: brand || null,
+      size: size || null,
+      colors: selectedColors.length > 0 ? selectedColors : null,
     });
   };
 
-  // Handle clear filters
+  // Clears all filters
   const handleClearFilters = () => {
-    setCategory('All');
-    setMinPrice(0);
-    setMaxPrice(Infinity);
+    setCategory('');
+    setMinPrice('');
+    setMaxPrice('');
     setBrand('');
     setSize('');
     setSelectedColors([]);
-    setSelectedWidth(null);
-    onFilterChange({}); // Reset filters in parent component
+    onFilterChange({});
   };
+
   return (
     <div className="row">
       <div className="product-filter">
-        <h4>Filter Products</h4>
-        {/* Categories Filter */}
+        <h4>Filter Shoes</h4>
+
+        {/* Category Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
-            <h3>Categories</h3>
-            <select className="form-control" name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <h3>Category</h3>
+            <select className="form-control" value={category} onChange={(e) => setCategory(e.target.value)}>
               <option value="">All</option>
-              <option value="men's clothing">Men's Clothing</option>
-              <option value="women's clothing">Women's Clothing</option>
-              <option value="jewelery">Jewelery</option>
-              <option value="electronics">Electronics</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
         </div>
+
         {/* Price Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
             <h3>Price</h3>
-            <ul>
-              <li>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Min Price"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                />
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Max Price"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                />
-              </li>
-            </ul>
-
+            <input
+              type="number"
+              className="form-control mb-1"
+              placeholder="Min Price"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+            <input
+              type="number"
+              className="form-control"
+              placeholder="Max Price"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
           </div>
         </div>
-        {/* Brand */}
+
+        {/* Brand Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
             <h3>Brand</h3>
-            <select
-              className="form-control"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}>
+            <select className="form-control" value={brand} onChange={(e) => setBrand(e.target.value)}>
               <option value="">All</option>
-              <option value="Nike">Nike</option>
-              <option value="Adidas">Adidas</option>
-              <option value="Puma">Puma</option>
-              <option value="Reebok">Reebok</option>
+              {brands.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
             </select>
           </div>
         </div>
-        {/* Size/Width Filter */}
+
+        {/* Size Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
-            <h3>Size/Width</h3>
-            <div className="block-26 mb-2">
-              <h4>Size</h4>
-              <ul>
-                {["7", "7.5", "8", "8.5", "9", "9.5", "10"].map((size) => (
-                  <li key={size}> <button
-                    key={size}
-                    type="button"
-                    className={` ${size === size ? "btn-primary" : "btn-outline-primary"}`}
-
-                    onClick={() =>
-                      setSize(size === size ? null : size)
-                    }>
-                    {size}
-                  </button></li>
-                ))}
-              </ul>
-            </div>
+            <h3>Size</h3>
             <div className="block-26">
-              <h4>Width</h4>
               <ul>
-                {["N", "R", "W"].map((width) => (
-                  <li key={width}>
+                {sizes.map((sizeOption) => (
+                  <li key={sizeOption}>
                     <button
-                      key={width}
                       type="button"
-                      className={` ${selectedWidth === width ? "btn-primary" : "btn-outline-primary"
-                        }`}
-                      onClick={() =>
-                        setSelectedWidth(selectedWidth === width ? null : width)
-                      }
+                      className={`btn ${size === sizeOption ? "btn-primary" : "btn-outline-primary"}`}
+                      onClick={() => setSize(sizeOption)}
                     >
-                      {width}
-                    </button> </li>
+                      {sizeOption}
+                    </button>
+                  </li>
                 ))}
               </ul>
             </div>
           </div>
         </div>
+
         {/* Color Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
             <h3>Colors</h3>
-            <ul>
-              {["Black", "White", "Red", "Blue", "Green"].map((color) => (
+            <ul className="d-flex flex-wrap">
+              {colors.map((color) => (
                 <li key={color} className="form-check me-2">
                   <input
                     type="checkbox"
@@ -168,13 +162,13 @@ const ProductFilter = ({ onFilterChange }) => {
                   ></label>
                 </li>
               ))}
-
             </ul>
           </div>
-
         </div>
+
+        {/* Filter Actions */}
         <div className="text-center">
-          <button className="btn btn-primary" onClick={handleFilterUpdate}>
+          <button className="btn btn-primary me-2" onClick={handleFilterUpdate}>
             Apply Filters
           </button>
           <button className="btn btn-secondary" onClick={handleClearFilters}>
@@ -184,6 +178,4 @@ const ProductFilter = ({ onFilterChange }) => {
       </div>
     </div>
   );
-};
-
-export default ProductFilter;
+}

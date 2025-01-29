@@ -1,38 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate for navigation
 import Breadcrumbs from './BreadCrumbs';
+import { CartContext } from '../context/CartContext';
+import { Carousel } from "react-bootstrap";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faChevronRight, faMinus, faPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
-export default function ProductDetail({setCartCount }) {
+export default function ProductDetail({ setCartCount }) {
     const { id } = useParams();
     const navigate = useNavigate(); // useNavigate hook for programmatic navigation
 
     // Initialize all states upfront
     const [product, setProduct] = useState(null);
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [quantity, setQuantity] = useState(1); // Added state for quantity
     const [selectedSize, setSelectedSize] = useState(null); // Added state for selected size
     const [selectedWidth, setSelectedWidth] = useState(null); // Added state for selected width
-    // State for the cart
-    const [cart, setCart] = useState(() => {
-        // Retrieve cart from localStorage on initial load (if any)
-        const savedCart = localStorage.getItem('cart');
-        return savedCart ? JSON.parse(savedCart) : [];
-    });
-    const images = [
-        './src/assets/images/item-1.jpg',
-        './src/assets/images/item-2.jpg',
-        './src/assets/images/item-3.jpg',
-        './src/assets/images/item-4.jpg'
-    ];
+    const { addToCart } = useContext(CartContext);
 
-    // Function to move to the next slide
-    function nextSlide() {
-        setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
-    }
-    // Function to move to the previous slide
-    function prevSlide() {
-        setCurrentSlide((prevSlide) => (prevSlide - 1 + images.length) % images.length);
-    }
     // Handle quantity increment and decrement
     function incrementQuantity() {
         setQuantity((prevQuantity) => prevQuantity + 1);
@@ -85,11 +69,12 @@ export default function ProductDetail({setCartCount }) {
         setCartCount(totalQuantity);
 
         alert(`Added ${quantity} item(s) of "${product.title}" to the cart.`);
+        addToCart({ ...product, quantity: 1 })
     }
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+                const response = await fetch(`http://localhost:3001/api/products/${id}`);
                 const result = await response.json();
                 setProduct(result);
             } catch (error) {
@@ -99,15 +84,8 @@ export default function ProductDetail({setCartCount }) {
         fetchProduct();
     }, [id]);
 
-
-    // Optionally, you can add automatic slide change
+    // Get cart count from localStorage on component mount
     useEffect(() => {
-        const interval = setInterval(nextSlide, 3000); // Change slide every 3 seconds
-        return () => clearInterval(interval); // Clean up interval on component unmount
-    }, []);
-
-     // Get cart count from localStorage on component mount
-     useEffect(() => {
         const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
         const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
         setCartCount(totalQuantity);
@@ -123,45 +101,29 @@ export default function ProductDetail({setCartCount }) {
             <Breadcrumbs currentPage="Product Details" />
             <div className="colorlib-product">
                 <div className="container">
-                    <div className="row row-pb-lg product-detail-wrap">
-                        <div className="col-sm-8">
-                            <div className="owl-carousel">
-                                <div className="item">
-                                    <div className="product-entry border">
-                                        <img
-                                            src={product.image}
-                                            className="img-fluid"
-                                            alt={` ${product.title}`}
-                                        />
-                                          {/* <img
-                                            src={product.image[currentSlide]}
-                                            alt={` ${product.title} ${currentSlide + 1}`}
-                                            className="img-fluid"
-                                            onClick={() => navigate(`/${product.id}`)}
-                                        /> */}
-                                    </div>
-                                </div>
 
-                                {/* Navigation buttons */}
-                                <button onClick={prevSlide} className="prev-button">
-                                    &#10094;
-                                </button>
-                                <button onClick={nextSlide} className="next-button">
-                                    &#10095;
-                                </button>
-                            </div>
-                          
+                    <div className="row row-pb-lg product-detail-wrap">
+                        <div className="col-sm-6">
+                            <Carousel prevIcon={<FontAwesomeIcon icon={ faChevronLeft} className="text-black" />} nextIcon={<FontAwesomeIcon icon={faChevronRight}  className="text-black"/>} interval={null} controls={true} >
+                                {product.image_urls.map((url, index) => (<Carousel.Item key={index}>
+                                    <img  src={url} alt={`${product.name} ${index}`} style={{ width: "100px", margin: "5px" }} className="d-block w-100" />
+                                </Carousel.Item>
+                                ))}
+                            </Carousel>
+
+
+
                         </div>
-                        <div className="col-sm-4">
+                        <div className="col-sm-6">
                             <div className="product-desc">
                                 {/* Product Name */}
-                                <h3>{product.title || 'Loading product name...'}</h3>
+                                <h3>{product.name || 'Loading product name...'}</h3>
                                 {/* Product Price */}
                                 <p className="price">
                                     <span>{product.price ? `$${product.price}` : 'Loading price...'}</span>
-                                    <span className="rate">
+                                    {/* <span className="rate">
                                         ({product.rating.rate || '0'} Rating, {product.rating.count || '0'} Reviews)
-                                    </span>
+                                    </span> */}
                                 </p>
                                 {/* Product Description */}
                                 <p>{product.description || 'Loading description...'}</p>
@@ -210,7 +172,8 @@ export default function ProductDetail({setCartCount }) {
                                             className="quantity-left-minus btn"
                                             onClick={decrementQuantity}
                                         >
-                                            <i className="icon-minus2"></i>
+
+                                            <FontAwesomeIcon icon={faMinus} />
                                         </button>
                                     </span>
                                     <input
@@ -227,7 +190,7 @@ export default function ProductDetail({setCartCount }) {
                                             className="quantity-right-plus btn"
                                             onClick={incrementQuantity}
                                         >
-                                            <i className="icon-plus2"></i>
+                                            <FontAwesomeIcon icon={faPlus} />
                                         </button>
                                     </span>
                                 </div>
@@ -237,7 +200,7 @@ export default function ProductDetail({setCartCount }) {
                                     <div className="col-sm-12 text-center">
                                         <p className="addtocart">
                                             <button onClick={handleAddToCart} className="btn btn-primary btn-addtocart">
-                                                <i className="icon-shopping-cart"></i> Add to Cart
+                                                <FontAwesomeIcon icon={faShoppingCart} />  Add to Cart
                                             </button>
                                         </p>
                                     </div>
@@ -245,9 +208,10 @@ export default function ProductDetail({setCartCount }) {
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
-      
+
         </>
     );
 }
