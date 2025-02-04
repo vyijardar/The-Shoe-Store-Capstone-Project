@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Login({ setToken ,setisLoggedIn}) {
+export default function Login({ setToken, setisLoggedIn }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState({});
     const navigate = useNavigate();
 
     function validateForm() {
@@ -15,7 +15,7 @@ export default function Login({ setToken ,setisLoggedIn}) {
         } else if (!/\S+@\S+\.\S+/.test(email)) {
             errors.email = "Invalid email address.";
         }
-    
+
         if (!password.trim()) {
             errors.password = "Password is required.";
         } else if (password.length < 4) {
@@ -33,39 +33,50 @@ export default function Login({ setToken ,setisLoggedIn}) {
             setError(validationErrors);
             return;
         }
-        setError("");
+        setError({});
 
         try {
-            const response = await fetch("https://fsa-book-buddy-b6e748d1380d.herokuapp.com/api/users/login", {
+            const response = await fetch("http://localhost:3001/api/auth/login", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "Application/json",
+                    "Content-Type": "application/json",
+
                 },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
+                body: JSON.stringify({ email, password }),
             });
+
             const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Login failed. Please try again.");
+            }
+
+            // Check if token is returned
             if (result.token) {
                 setToken(result.token);
                 localStorage.setItem("token", result.token);
-                alert("Logged in successfully");
-                navigate("/account");
+                console.log("Token being sent to client:", result.token);
+                // Ensure result.user exists before accessing
+                if (result.user) {
+                    localStorage.setItem("role", result.user.role);
+
+                    if (result.user.role === "admin") {
+                        navigate("/admin/dashboard");
+                    } else {
+                        navigate("/account");
+                    }
+                } else {
+                    throw new Error("Login failed: User information missing.");
+                }
+
+                setisLoggedIn(true); // Set the logged-in status to true
             } else {
-                throw new Error("Failed to sign up, no token received");
+                throw new Error("Login failed: No token received.");
             }
         } catch (error) {
             setError({ global: error.message });
         }
     }
-      // Simulate a login process
-      const handleLogin = () => {
-        // If credentials are valid, set the token
-        setToken('fake-token');  // Replace with actual token from API
-        setisLoggedIn(true);
-    };
-
 
     return (
         <div className="container mt-5">
@@ -77,7 +88,7 @@ export default function Login({ setToken ,setisLoggedIn}) {
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
-                                {/* Email input */}
+                                {/* Email Input */}
                                 <div className="mb-3">
                                     <label htmlFor="email" className="form-label">Email</label>
                                     <input
@@ -91,7 +102,7 @@ export default function Login({ setToken ,setisLoggedIn}) {
                                     {error.email && <div className="invalid-feedback">{error.email}</div>}
                                 </div>
 
-                                {/* Password input */}
+                                {/* Password Input */}
                                 <div className="mb-3">
                                     <label htmlFor="password" className="form-label">Password</label>
                                     <input
@@ -107,20 +118,18 @@ export default function Login({ setToken ,setisLoggedIn}) {
 
                                 {/* Submit Button */}
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <button type="submit" className="btn btn-primary" onClick={handleLogin}>Submit</button>
-                                    <div>
-                                        <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => navigate("/signup")}
-                                        >
-                                            Don't have an account? Register Here!
-                                        </button>
-                                    </div>
+                                    <button type="submit" className="btn btn-primary">Login</button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-link"
+                                        onClick={() => navigate("/signup")}
+                                    >
+                                        Don't have an account? Register Here!
+                                    </button>
                                 </div>
                             </form>
 
-                            {/* Global error */}
+                            {/* Global Error Display */}
                             {error.global && <div className="alert alert-danger mt-3">{error.global}</div>}
                         </div>
                     </div>

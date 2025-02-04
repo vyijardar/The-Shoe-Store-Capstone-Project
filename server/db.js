@@ -1,17 +1,21 @@
+require('dotenv').config();
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/shoe_store_db');
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const JWT = process.env.JWT || 'shhh';
-
+const JWT= process.env.JWT_SECRET || 'your_jwt_secret'
 const createTables = async () => {
   const SQL = `
-    DROP TABLE IF EXISTS users;
-    DROP TABLE IF EXISTS products;
+    DROP TABLE IF EXISTS users CASCADE;
+    DROP TABLE IF EXISTS products CASCADE;
+    DROP TABLE IF EXISTS orders CASCADE;
+     DROP TABLE IF EXISTS order_items CASCADE;
+    DROP TABLE IF EXISTS products CASCADE;
     CREATE TABLE users (
     id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    firstname VARCHAR(255) NOT NULL,
+    lastname VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(15),
@@ -37,16 +41,34 @@ const createTables = async () => {
     ALTER TABLE products 
     DROP COLUMN image_url, 
     ADD COLUMN image_urls TEXT[];
+
+    CREATE TABLE orders (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(255),
+    total DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+
+    CREATE TABLE order_items (
+    id UUID PRIMARY KEY,
+    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+    product_name VARCHAR(255),
+    quantity INT,
+    price DECIMAL(10, 2));
     `;
   await client.query(SQL);
 
 }
 
-const createUser = async ({ name, email, password, phone, address, role = 'customer' }) => {
+const createUser = async ({ firstname, lastname, email, password,  role = 'customer' }) => {
   try {
-    const SQL = `INSERT INTO users(id, name, email, password, phone, address, role, created_at, updated_at) 
-                  values($1, $2, $3, $4, $5, $6, $7, NOW(), NOW()) RETURNING *`;
-    const response = await client.query(SQL, [uuid.v4(), name, email, await bcrypt.hash(password, 10), phone, address, role]);
+    
+    const SQL = `INSERT INTO users(id, firstname,lastname, email, password, role, created_at, updated_at) 
+                  values($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING *`;
+    const response = await client.query(SQL, [uuid.v4(), firstname, lastname, email, await bcrypt.hash(password, 10), role]);
+    console.log('Query result:', response.rows[0]);
     return response.rows[0];
   } catch (error) {
     console.error("Error creating user:", error);
@@ -68,49 +90,63 @@ const createProduct = async ({ name, description, price, brand, category, gender
 
 }
 
-const authenticate = async ({ email, password }) => {
-  const SQL = `SELECT id, email,password FROM users WHERE email=$1; `;
-  const response = await client.query(SQL, [email]);
-  console.log("Password entered:", password);
-  console.log("Stored hashed password:", response.rows[0].password);
+async function findUserByEmail(email, password) {
+  const SQL = `SELECT id, email, password, role FROM users WHERE email = $1`;
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await client.query(SQL, [normalizedEmail]);
 
-  if (!response.rows.length || !(await bcrypt.compare(password, response.rows[0].password))) {
-    const error = Error('not authorized');
-    error.status = 401;
-    throw error;
+  console.log("Query result:", result.rows);
+  if (result.rows.length === 0) {
+      throw new Error('User not found');
   }
-  console.log('before token generation', response.rows[0].id);
-  const token = jwt.sign({ id: response.rows[0].id }, JWT);
-  console.log(token, 'token')
-  return { token };
-};
 
-const findUserWithToken = async (token) => {
-  let id;
+  const user = result.rows[0];
+
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) {
+      throw new Error('Invalid password');
+  }
+
+  const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT // Make sure this is defined
+  );
+  
+  console.log("Generated token:", token);
+  console.log("Returning user:", user);  // Ensure user info is logged correctly
+
+  return { token, user };  // Ensure both are returned
+}
+async function adminDetails() {
+  const SQL =`SELECT id, email, firstname, lastname, role FROM users`;
+  const result = await client.query(SQL);
+  console.log('Query result:', result.rows);
+  return result.rows;
+}
+// Utility function to generate a JWT token
+function generateToken(user) {
+  return jwt.sign(
+      { id: user.id, email: user.email, role: user.role },JWT );
+}
+async function findUserById(id) {
+  const query = 'SELECT * FROM users WHERE id = $1';
+  const values = [id];
+
   try {
-    const payload = await jwt.verify(token, JWT);
-    id = payload.id;
-    console.log('Decoded Payload:', payload);  // 
-  } catch (ex) {
-    const error = Error('not authorized');
-    error.status = 401;
-    throw error;
+      const result = await client.query(query, values);
+      if (result.rows.length === 0) {
+          return null;  // User not found
+      }
+      return result.rows[0];  // Return the user data
+  } catch (error) {
+      console.error('Database error:', error.message);
+      throw new Error('Database query failed');
   }
-  const SQL = `
-    SELECT id, email FROM users WHERE id=$1;
-  `;
-  const response = await client.query(SQL, [id]);
-  if (!response.rows.length) {
-    const error = Error('not authorized');
-    error.status = 401;
-    throw error;
-  }
-  return response.rows[0];
-};
+}
 
 const fetchUsers = async () => {
   try {
-    const SQL = `SELECT id, name FROM users;`;
+    const SQL = `SELECT id, firstname, lastname FROM users;`;
     const response = await client.query(SQL);
     return response.rows;
   } catch (error) {
@@ -119,6 +155,45 @@ const fetchUsers = async () => {
   }
  
 };
+const updateUser = async ({ userId, phone, address }) => {
+  try {
+      // SQL query to update the user's phone and address during checkout
+      const SQL = `UPDATE users 
+                   SET phone = $1, address = $2, updated_at = NOW() 
+                   WHERE id = $3 RETURNING *`;
+
+      // Execute the query
+      const response = await client.query(SQL, [phone, address, userId]);
+
+      // Return the updated user data
+      return response.rows[0];
+  } catch (error) {
+      console.error("Error updating user during checkout:", error);
+      throw new Error('Failed to update user during checkout');
+  }
+};
+
+async function getAdminByEmail(email) {
+  try {
+    // Define the query to get the user with the provided email and role 'admin'
+    const query = 'SELECT * FROM users WHERE email = $1 AND role = $2';
+    const values = [email, 'admin'];  // The email provided by the client and the role 'admin'
+
+    // Execute the query
+    const result = await client.query(query, values);
+
+    // If no user is found
+    if (result.rows.length === 0) {
+      return null;  // Return null if no admin user is found
+    }
+
+    // Return the first user found (admin)
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error fetching admin by email:', error);
+    throw new Error('Database query failed');
+  }
+}
 
 const fetchProducts = async () => {
   try {
@@ -179,7 +254,10 @@ module.exports = {
   fetchSingleProduct,
   deleteProduct,
   updateProduct,
-  authenticate,
-  findUserWithToken
-
+  updateUser,
+  getAdminByEmail,
+  findUserByEmail,
+  findUserById,
+  generateToken,
+  adminDetails
 };

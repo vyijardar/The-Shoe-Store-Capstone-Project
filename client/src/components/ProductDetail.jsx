@@ -8,13 +8,13 @@ import { faChevronLeft, faChevronRight, faMinus, faPlus, faShoppingCart } from '
 
 export default function ProductDetail({ setCartCount }) {
     const { id } = useParams();
-    const navigate = useNavigate(); // useNavigate hook for programmatic navigation
+    const navigate = useNavigate(); 
 
     // Initialize all states upfront
     const [product, setProduct] = useState(null);
-    const [quantity, setQuantity] = useState(1); // Added state for quantity
-    const [selectedSize, setSelectedSize] = useState(null); // Added state for selected size
-    const [selectedWidth, setSelectedWidth] = useState(null); // Added state for selected width
+    const [quantity, setQuantity] = useState(1); 
+    const [selectedSize, setSelectedSize] = useState(null); 
+    const [selectedWidth, setSelectedWidth] = useState(null); 
     const { addToCart } = useContext(CartContext);
 
     // Handle quantity increment and decrement
@@ -24,7 +24,6 @@ export default function ProductDetail({ setCartCount }) {
     function decrementQuantity() {
         if (quantity > 1) setQuantity((prevQuantity) => prevQuantity - 1);
     }
-    // Handle size and width selection
     function handleSizeSelection(size) {
         setSelectedSize(size);
     }

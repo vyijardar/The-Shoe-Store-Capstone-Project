@@ -12,10 +12,10 @@ import ContactPage from "./pages/ContactPage";
 import Checkout from "./components/Checkout";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import AdminLogin from "./pages/admin/Login";
+import AdminLogin from "./pages/admin/AdminLogin";
 import DashboardLayout from "./pages/admin/DashboardLayout";
-import AdminProducts from "./pages/admin/Products";
-import AdminUsers from "./pages/admin/Users";
+import Products from "./pages/admin/Products";
+import Users from "./pages/admin/Users";
 import Footer from './components/Footer'
 import UserAccount from './pages/UserAccount'
 import About from './pages/About'
@@ -35,11 +35,6 @@ function App() {
     setCartCount(totalQuantity);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    setToken(null);
-    window.location.href = "/admin/login";
-  };
 
   return (
     <div id="page">
@@ -49,30 +44,27 @@ function App() {
             setToken={setToken} setisLoggedIn={setisLoggedIn} />
           <Routes>
             <Route path="/" element={<Home token={token} setToken={setToken} />} />
-            <Route path="/men" element={<Men token={token} setToken={setToken} />} />
-            <Route path="/women" element={<Women token={token} setToken={setToken} />} />
+            <Route path="/men" element={<Men  />} />
+            <Route path="/women" element={<Women  />} />
             <Route path='/products/:id' element={<ProductDetail setCartCount={setCartCount} />} token={token} setToken={setToken} ></Route>
             <Route path="/cart" element={<Cartpage token={token} setToken={setToken} />} />
             <Route path="/login" element={<Login token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
-            <Route path="/signup" element={<SignUp token={token} setToken={setToken} />} />
+            <Route path="/signup" element={<SignUp token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
             <Route path="/about" element={<About token={token} setToken={setToken} />} />
             <Route path="/checkout" element={<Checkout token={token} setToken={setToken} />} />
             <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken} />} />
-            <Route path="/account" element={<UserAccount token={token} setToken={setToken} />} />
+            <Route path="/account" element={<UserAccount token={token} setToken={setToken} setisLoggedIn={setisLoggedIn}  />} />
             <Route path="/contact" element={<ContactPage token={token} setToken={setToken} />} />
             <Route path="/shoe-care" element={<ShoeCare />} />
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/shipping-returns" element={<ShippingAndReturns />} />
             <Route path="/size-chart" element={<SizeChart />} />
                {/* Admin Routes */}
-               <Route path="/admin/login" element={<AdminLogin setToken={setToken} />} />
-            <Route
-              path="/admin"
-              element={<DashboardLayout />}
-            >
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="users" element={<AdminUsers />} />
-            </Route>
+               <Route path="/admin/login" element={<AdminLogin setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
+               <Route path="/admin/dashboard" element={<DashboardLayout token={token}/>}   />
+              <Route path="/admin/products" element={<Products />} />
+              <Route path="/admin/users" element={<Users />} />
+       
           </Routes>
           <Footer />
         </Router>

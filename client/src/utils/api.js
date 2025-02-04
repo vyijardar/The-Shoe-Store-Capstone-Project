@@ -1,13 +1,14 @@
 // api.js
 
 // Placeholder base URL (replace with the actual URL of your backend once ready)
-const API_BASE_URL = "http://localhost:5000"; // Update with the real backend URL when available
+const API_BASE_URL = "http://localhost:3001/api"; // Update with the real backend URL when available
 
 // Function to fetch all users
 export const fetchUsers = async (token) => {
   try {
     // Placeholder logic: Replace this with an actual API call when ready
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+    const response = await fetch("http://localhost:3001/api/admin/users", {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -6,9 +6,10 @@ export default function Register({ setToken }) {
     const [lastname, setLastname] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState([]);
+    const [error, setError] = useState({});
     const navigate = useNavigate();
 
+    // Form validation
     function validateForm() {
         const errors = {};
 
@@ -32,22 +33,24 @@ export default function Register({ setToken }) {
         return errors;
     }
 
+    // Handle form submission
     async function handleSubmit(event) {
         event.preventDefault();
-
+    
         const validationErrors = validateForm();
         if (Object.keys(validationErrors).length > 0) {
             setError(validationErrors);
             return;
         }
-
-        setError([]);
+    
+        setError({}); // Reset any previous errors
+        console.log("Submitting registration data:", { firstname, lastname, email, password });
 
         try {
-            const response = await fetch("https://fsa-book-buddy-b6e748d1380d.herokuapp.com/api/users/register", {
+            const response = await fetch("http://localhost:3001/api/users", {
                 method: "POST",
                 headers: {
-                    'Content-Type': 'Application/json',
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     firstname,
@@ -58,14 +61,18 @@ export default function Register({ setToken }) {
             });
 
             const result = await response.json();
+            console.log("API response:", result);
 
-            if (result.token) {
-                setToken(result.token);
-                localStorage.setItem('token', result.token);
-                alert("Registered Successfully");
-                navigate('/login'); // Navigate to login page after registration
+            if (response.ok) {
+                if (result.token) {
+                    alert("Registered Successfully");            
+                    navigate('/login'); // Redirect to login after registration
+                 
+                } else {
+                    setError({ global: "Failed to sign up, no token received" });
+                }
             } else {
-                throw new Error("Failed to sign up, no token received");
+                setError({ global: "An error occurred during signup" });
             }
         } catch (error) {
             setError({ global: error.message });
@@ -142,11 +149,7 @@ export default function Register({ setToken }) {
                                 <div className="d-flex justify-content-between align-items-center">
                                     <button type="submit" className="btn btn-primary">Register</button>
                                     <div>
-                                        <button
-                                            type="button"
-                                            className="btn btn-link"
-                                            onClick={() => navigate("/login")}
-                                        >
+                                        <button type="button"  className="btn btn-link" onClick={() => navigate("/login")} >
                                             Already have an account? Login Here!
                                         </button>
                                     </div>

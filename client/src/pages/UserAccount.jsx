@@ -1,35 +1,45 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Account = ({ token, setToken, setIsLoggedIn }) => {
+export default function UserAccount({ token }) {
     const [accountInfo, setAccountInfo] = useState(null);
     const [orders, setOrders] = useState([]);
     const navigate = useNavigate();
 
+    // Fetch user account info from the API
+    const fetchAccountInfo = async () => {
+        try {
+        
+            const response = await fetch("http://localhost:3001/api/auth/me", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,  // Ensure the token is being sent correctly
+                },
+            });
+        
+            console.log("Token sent:", token);
+            if (!response.ok) {
+                console.error("Response not OK:", response.status, response.statusText);
+                throw new Error("Failed to fetch account info");
+            }
+            const data = await response.json();
+            setAccountInfo(data);
+            console.log("account info:", data);
+        } catch (error) {
+            console.error("Failed to fetch account info", error);
+        }
+    };
+  
     useEffect(() => {
         if (!token) {
             navigate("/login"); // Redirect to login page if no token
         } else {
             fetchAccountInfo(); // Fetch account info when token is present
-            fetchOrderHistory(); // Fetch order history (using dummy data here)
+            fetchOrderHistory(); // Fetch order history when token is present
         }
-    }, [token, navigate]);
+    }, [token, navigate]); // Re-run this effect when token changes
 
-    // Fetch user account info from the API (Simulated with dummy data)
-    const fetchAccountInfo = async () => {
-        try {
-            const data = {
-                firstName: "John",
-                lastName: "Doe",
-                email: "john.doe@example.com",
-            };
-            setAccountInfo(data);
-        } catch (error) {
-            console.error("Failed to fetch account info", error);
-        }
-    };
-
-    // Fetch order history from the API (Simulated with dummy data)
+    // Fetch order history from the API
     const fetchOrderHistory = async () => {
         try {
             // Simulating an API response with dummy order data
@@ -61,37 +71,30 @@ const Account = ({ token, setToken, setIsLoggedIn }) => {
         }
     };
 
-    // Handle logout
-    const handleLogout = () => {
-        setToken(null); // Clear the token
-        setIsLoggedIn(false); // Update the login status
-        navigate("/login"); // Redirect to login page
-    };
-
     const handleCheckout = () => {
         navigate("/checkout"); // Redirect to the checkout page
     };
+
     return (
         <div className="container mt-4">
             <div className="row">
                 <div className="col-lg-9">
                     {accountInfo ? (
                         <div>
-                            <h1>Welcome, {accountInfo.firstName} {accountInfo.lastName}</h1>
-                            <p>Email: {accountInfo.email}</p>
+                            <h1>Welcome, {accountInfo.firstname} {accountInfo.lastname}</h1>
+                            <p><strong>Email:</strong> {accountInfo.email}</p>
+                            <p><strong>Phone:</strong> {accountInfo.phone}</p>
+                            <p><strong>Address:</strong> {accountInfo.address}</p>
+                            {/* Add more fields as necessary */}
                         </div>
                     ) : (
                         <p>Loading account information...</p>
                     )}
                 </div>
 
-                <div className="col-lg-3">
-                    {/* Logout button */}
-                    <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                </div>
+                {/* Order History Section */}
             </div>
 
-            {/* Order History Section */}
             <div className="order-history mt-4">
                 <h2>Your Order History</h2>
                 {orders.length === 0 ? (
@@ -122,6 +125,4 @@ const Account = ({ token, setToken, setIsLoggedIn }) => {
             </div>
         </div>
     );
-};
-
-export default Account;
+}

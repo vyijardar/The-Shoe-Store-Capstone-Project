@@ -1,3 +1,4 @@
+require('dotenv').config();
 const {
     client,
     createTables,
@@ -7,57 +8,180 @@ const {
     fetchProducts,
     fetchSingleProduct,
     deleteProduct,
-    authenticate,
-    findUserWithToken,
-    updateProduct
+    updateProduct,
+    updateUser,
+    getAdminByEmail,
+    findUserByEmail,
+    findUserById,
+    adminDetails
 } = require('../db');
 
 const express = require('express');
 const app = express();
-const { checkAdmin } = require('../middleware/auth');
-app.use(express.json());
-
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+const { checkAdmin,isLoggedIn } = require('../middleware/auth');
+
+app.use(express.json());
 app.use(cors());
 app.use(require('morgan')('dev'))
+
+
 //for deployment only
 const path = require('path');
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')));
 app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets')));
 
 
-const isLoggedIn = async (req, res, next) => {
-    try {
-        req.user = await findUserWithToken(req.headers.authorization);
-        next();
-    } catch (ex) {
-        next(ex);
-    }
-}
+// const isLoggedIn = async (req, res, next) => {
+//     try {
+//         req.user = await findUserWithToken(req.headers.authorization);
+//         next();
+//     } catch (ex) {
+//         next(ex);
+//     }
+// }
 
-app.post('/api/auth/login', async (req, res, next) => {
+app.get('/api/admin/dashboard', isLoggedIn, checkAdmin, async (req, res) => {
     try {
-        // res.send(await authenticate(req.body));
-        const { email, password } = req.body;
-        const { token } = await authenticate({ email, password });
-        res.json({ token });
-    }
-    catch (ex) {
-        next(ex);
+        const user = await adminDetails(req.user.id);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({id: user.id,
+            email: user.email,
+            firstname: user.firstname,   // Ensure these columns exist in your database
+            lastname: user.lastname,
+            role: user.role,
+        });
+        
+    } catch (err) {
+        console.error('Error fetching admin dashboard data:', err);
+        next(err);
     }
 });
+app.get('/api/admin/users', isLoggedIn, checkAdmin, async (req, res) => {
+    try {
+        const users = await adminDetails();
+        
+        if (!users || users.length === 0) {
+            return res.status(404).json({ error: 'No users found' });
+          }
+        res.json(users);
+        
+    } catch (err) {
+        console.error('Error fetching admin dashboard data:', err);
+        next(err);
+    }
+});
+app.post('/admin/login', async (req, res) => {
+    const { email, password } = req.body;
+  
+    // Check if both email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+  
+    try {
+      // Call the getAdminByEmail function to check for an admin user
+      const admin = await getAdminByEmail(email);
+  
+      // If admin is not found
+      if (!admin) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+  
+      // Compare the entered password with the hashed password stored in the database
+      const isPasswordValid = await bcrypt.compare(password, admin.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid email or password' });
+      }
+  
+      // Generate a JWT token with user details
+      const token = jwt.sign(
+        { id: admin.id, email: admin.email, role: admin.role },
+        process.env.JWT_SECRET, // Use environment variable for your secret
+        { expiresIn: '1h' }
+      );
+  
+      // Send the token to the client
+      res.status(200).json({
+        message: 'Login successful',
+        token,
+        role: admin.role,
+      });
+    } catch (ex) {
+        console.log("Database error:", ex.message);
+        res.status(500).json({ error: "An error occurred while fetching the product" });
+    }
+  });
+
+app.get("/api/auth/users", checkAdmin, async (req, res) => {
+    try {
+        const users = await fetchUsers();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
+
+app.post('/api/auth/login', async (req, res) => {
+ 
+    try {
+        const { email, password } = req.body;
+    
+        console.log('Login request body:', req.body);
+        // Validate request
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
+        const { token, user } = await findUserByEmail(email, password);  // Ensure both are returned
+        console.log("Token:", token);
+        console.log("User:", user);  // Make sure this logs a user object
+
+        res.json({ token, user });
+       
+    } catch (err) {
+        console.log("Database error:", err.message);
+        // Differentiate between user errors and server errors
+        if (err.message === "User not found" || err.message === "Invalid password") {
+            res.status(401).json({ error: err.message });  // Unauthorized
+        } else {
+            res.status(500).json({ error: "Internal server error" });  // Server issue
+        }
+    }
+});
+
 
 app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
     try {
-        res.send(await findUserWithToken(req.headers.authorization));
-    }
-    catch (ex) {
-        next(ex);
+        // Fetch user info from the database
+        const user = await findUserById(req.user.id); 
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstname: user.firstname,   // Ensure these columns exist in your database
+            lastname: user.lastname,
+            phone: user.phone,
+            address: user.address,
+        });
+    } catch (ex) {
+        console.error("Error fetching account info:", ex);
+        next(ex);  // Pass error to error handler
     }
 });
-
 // Log out the user (client should handle token removal)
-app.post('/api/auth/logout', async (req, res, next) => {
+app.post('/api/users/logout', async (req, res, next) => {
     try {
         res.json({ message: 'Logged out successfully' });
     }
@@ -75,11 +199,74 @@ app.get('/api/users', async (req, res, next) => {
     }
 });
 
+app.post('/api/users', async (req, res, next) => {
+    try {
+        const { firstname,lastname, email, password, role } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Basic validation to ensure name, email, and password are present
+        if (!firstname || !lastname || !email || !password) {
+            return res.status(400).json({ error: 'Name, email, and password are required.' });
+        }
+
+        // You can add more validation for email format and password length here
+        const emailRegex = /\S+@\S+\.\S+/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Please enter a valid email address.' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+        }
+
+        // Create the user (you can replace this with your own user creation logic)
+        const user = await createUser({
+            firstname,
+            lastname,
+            email,
+            password:hashedPassword,
+            role: role || 'customer', // Default role is 'customer' if not provided
+        });
+
+          // Generate a JWT token for the created user
+          const token = jwt.sign(
+            { userId: user.id, email: user.email },
+            process.env.JWT_SECRET,  // Use environment variable for the secret key
+            { expiresIn: '1h' }
+        );
+        // Return the created user (or omit sensitive data like password)
+        res.status(201).json({
+            message: 'User created successfully',
+            user: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                role: user.role
+            },
+            token
+        });
+    } catch (ex) {
+        // Log the error for debugging and pass it to the error handler
+        console.error(ex);
+        next(ex);  // This will be caught by an error-handling middleware
+    }
+});
+// Delete a user (Admin only)
+app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await deleteUser(id);
+        res.sendStatus(204);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to delete user" });
+    }
+});
 app.get('/api/products', async (req, res, next) => {
     try {
 
-        res.send(await fetchProducts());
-        res.json(products);
+        const products = await fetchProducts();
+        res.json(products); 
     }
     catch (ex) {
         next(ex);
@@ -164,6 +351,86 @@ app.delete('/api/products/:id',checkAdmin, async (req, res, next) => {
     }
 });
 
+app.get('/api/orders', checkAdmin, async (req, res) => {
+    try {
+        // Query the database for orders by user ID
+        const result = await client.query(
+            `SELECT orders.id, orders.order_date, orders.status, orders.total, order_items.product_name, order_items.quantity, order_items.price
+             FROM orders
+             LEFT JOIN order_items ON orders.id = order_items.order_id
+             WHERE orders.user_id = $1`,
+            [req.user.userId] // Use the user ID from the decoded JWT
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No orders found for this user.' });
+        }
+
+        const orders = result.rows.reduce((acc, row) => {
+            // Group items by order ID
+            const existingOrder = acc.find(order => order.id === row.id);
+            if (existingOrder) {
+                existingOrder.items.push({
+                    product: row.product_name,
+                    quantity: row.quantity,
+                    price: row.price,
+                });
+            } else {
+                acc.push({
+                    id: row.id,
+                    date: row.order_date,
+                    status: row.status,
+                    total: row.total,
+                    items: [{
+                        product: row.product_name,
+                        quantity: row.quantity,
+                        price: row.price,
+                    }],
+                });
+            }
+            return acc;
+        }, []);
+
+        res.status(200).json(orders); // Send the order history to the client
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/checkout', async (req, res, next) => {
+    try {
+        const { userId, phone, address } = req.body;
+
+        // Basic validation to ensure phone and address are provided
+        if (!phone || !address) {
+            return res.status(400).json({ error: 'Phone and address are required.' });
+        }
+
+        // Update the user with phone and address during checkout
+        const updatedUser = await updateUser({
+            userId,
+            phone,
+            address
+        });
+
+        res.status(200).json({
+            message: 'Checkout successful',
+            user: {
+                id: updatedUser.id,
+                firstname: updatedUser.firstname,
+                lastname: updatedUser.lastname,
+                email: updatedUser.email,
+                phone: updatedUser.phone,
+                address: updatedUser.address,
+                role: updatedUser.role
+            }
+        });
+    } catch (ex) {
+        console.error(ex);
+        next(ex);  // Pass the error to the error handler
+    }
+});
 app.use((err, req, res, next) => {
     console.log(err);
     res.status(err.status || 500).send({ error: err.message ? err.message : err });
@@ -179,29 +446,40 @@ const init = async () => {
 
     await Promise.all([
         createUser({
-            name: 'John Doe',
+            firstname:'John',
+            lastname: 'Doe',
             email: 'john@example.com',
             password: 'securepassword123',
-            phone: '123-456-7890',
-            address: '123 Main St, City, Country',
             role: 'customer',
         }),
         createUser({
-            name: "Alice Smith",
+            firstname:'Alice',
+            lastname: 'Smith',
             email: "alice@example.com",
             password: "strongpassword123",
-            phone: "321-654-9870",
-            address: "789 Another Road, City, Country",
             role: "customer"
         }),
         createUser({
-            name: "Robert Johnson",
+            firstname:'Emily',
+            lastname: 'Smith',
+            email: "emilysmith@example.com",
+            password: "emilysmith123",
+            role: "customer"
+        }),
+        createUser({
+            firstname:'Robert',
+            lastname: 'Johnson',
             email: "robert@example.com",
             password: "adminpassword123",
-            phone: "555-123-4567",
-            address: "101 Admin St, Admin City, Country",
             role: "admin"
         }),
+        await createUser({
+            firstname:'Admin',
+            lastname: 'User',
+            email: "admin@example.com",
+            password: "adminpassword123",
+            role: "admin"
+        })
     ]);
     const users = await fetchUsers();
     console.log('users created', users);
@@ -313,7 +591,7 @@ const init = async () => {
             name: "Nike Reina EasyOn",
             description: "Smart formal shoes designed for all-day comfort with a sleek appearance.",
             price: 140.00,
-            brand: "Clarks",
+            brand: "Nike",
             category: "Casual Shoes",
             gender: 'women',
             size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],

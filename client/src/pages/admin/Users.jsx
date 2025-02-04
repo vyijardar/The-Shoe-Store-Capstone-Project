@@ -4,15 +4,16 @@ import { fetchUsers, deleteUser } from '../../utils/api';
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem('adminToken');
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
+
     const fetchUserData = async () => {
       const userData = await fetchUsers(token);
+      console.log("Admin data received:", userData);
       setUsers(userData);
       setLoading(false);
     };
-
     fetchUserData();
   }, [token]);
 
@@ -33,23 +34,33 @@ export default function Users() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
             <th>Email</th>
-            <th>Actions</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Role</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>
-                <button onClick={() => handleDelete(user.id)}>Delete</button>
-              </td>
+          {users.length > 0 ? (
+            users.map((user) => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.email}</td>
+                <td>{user.firstname}</td>
+                <td>{user.lastname}</td>
+                <td>{user.role}</td>
+                <td>
+                  <button onClick={() => handleDelete(user.id)}>Delete</button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6">No users found.</td>
             </tr>
-          ))}
+          )}
         </tbody>
+
       </table>
     </div>
   );
