@@ -90,7 +90,7 @@ export default function Products() {
   }
 
   return (
-    <div className="product-management">
+    <div className="product-management container">
       <h2>Manage Products</h2>
       <button className="add-product-btn" onClick={() => openModal("Add")}>
         Add Product

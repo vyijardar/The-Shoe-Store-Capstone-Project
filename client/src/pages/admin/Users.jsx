@@ -28,9 +28,9 @@ export default function Users() {
   if (loading) return <p>Loading users...</p>;
 
   return (
-    <div className="view-users">
+    <div className="view-users container" >
       <h2>Manage Users</h2>
-      <table>
+      <table >
         <thead>
           <tr>
             <th>ID</th>

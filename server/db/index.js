@@ -21,7 +21,6 @@ const app = express();
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 const { checkAdmin,isLoggedIn } = require('../middleware/auth');
 
 app.use(express.json());
@@ -34,15 +33,6 @@ const path = require('path');
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')));
 app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets')));
 
-
-// const isLoggedIn = async (req, res, next) => {
-//     try {
-//         req.user = await findUserWithToken(req.headers.authorization);
-//         next();
-//     } catch (ex) {
-//         next(ex);
-//     }
-// }
 
 app.get('/api/admin/dashboard', isLoggedIn, checkAdmin, async (req, res) => {
     try {
@@ -63,6 +53,7 @@ app.get('/api/admin/dashboard', isLoggedIn, checkAdmin, async (req, res) => {
         next(err);
     }
 });
+
 app.get('/api/admin/users', isLoggedIn, checkAdmin, async (req, res) => {
     try {
         const users = await adminDetails();
@@ -77,7 +68,8 @@ app.get('/api/admin/users', isLoggedIn, checkAdmin, async (req, res) => {
         next(err);
     }
 });
-app.post('/admin/login', async (req, res) => {
+
+app.post('/api/admin/login', async (req, res) => {
     const { email, password } = req.body;
   
     // Check if both email and password are provided
@@ -117,8 +109,17 @@ app.post('/admin/login', async (req, res) => {
         console.log("Database error:", ex.message);
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
-  });
+});
 
+app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await deleteUser(id);
+        res.sendStatus(204);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to delete user" });
+    }
+});
 app.get("/api/auth/users", checkAdmin, async (req, res) => {
     try {
         const users = await fetchUsers();
@@ -127,7 +128,6 @@ app.get("/api/auth/users", checkAdmin, async (req, res) => {
         res.status(500).json({ error: "Failed to fetch users" });
     }
 });
-
 
 app.post('/api/auth/login', async (req, res) => {
  
@@ -156,7 +156,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-
 app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
     try {
         // Fetch user info from the database
@@ -180,7 +179,7 @@ app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
         next(ex);  // Pass error to error handler
     }
 });
-// Log out the user (client should handle token removal)
+
 app.post('/api/users/logout', async (req, res, next) => {
     try {
         res.json({ message: 'Logged out successfully' });
@@ -252,16 +251,7 @@ app.post('/api/users', async (req, res, next) => {
         next(ex);  // This will be caught by an error-handling middleware
     }
 });
-// Delete a user (Admin only)
-app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
-        await deleteUser(id);
-        res.sendStatus(204);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to delete user" });
-    }
-});
+
 app.get('/api/products', async (req, res, next) => {
     try {
 
@@ -325,7 +315,7 @@ app.post('/api/products/addproduct',checkAdmin, async (req, res, next) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-// Update an existing product (Admin only)
+
 app.put('/api/products/:id', checkAdmin, async (req, res, next) => {
     const { id } = req.params;
     const { name, description, price, image_urls, stock } = req.body;
@@ -431,6 +421,8 @@ app.post('/api/checkout', async (req, res, next) => {
         next(ex);  // Pass the error to the error handler
     }
 });
+
+
 app.use((err, req, res, next) => {
     console.log(err);
     res.status(err.status || 500).send({ error: err.message ? err.message : err });

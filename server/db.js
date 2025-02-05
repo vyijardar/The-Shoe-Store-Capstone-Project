@@ -7,10 +7,10 @@ const jwt = require('jsonwebtoken');
 const JWT= process.env.JWT_SECRET || 'your_jwt_secret'
 const createTables = async () => {
   const SQL = `
-    DROP TABLE IF EXISTS users CASCADE;
+    
     DROP TABLE IF EXISTS products CASCADE;
     DROP TABLE IF EXISTS orders CASCADE;
-     DROP TABLE IF EXISTS order_items CASCADE;
+    DROP TABLE IF EXISTS order_items CASCADE;
     DROP TABLE IF EXISTS products CASCADE;
     CREATE TABLE users (
     id UUID PRIMARY KEY,

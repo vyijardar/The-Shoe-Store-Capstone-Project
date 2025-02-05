@@ -61,7 +61,7 @@ export default function Login({ setToken, setisLoggedIn }) {
                     localStorage.setItem("role", result.user.role);
 
                     if (result.user.role === "admin") {
-                        navigate("/admin/dashboard");
+                        navigate("/admin");
                     } else {
                         navigate("/account");
                     }
