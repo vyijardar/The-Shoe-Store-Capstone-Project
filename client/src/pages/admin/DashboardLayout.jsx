@@ -2,13 +2,14 @@
 import { NavLink, Outlet } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 import "../../css/dashboard.css";
 
 export default function DashboardLayout() {
+  const navigate = useNavigate()
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
-    window.location.href = "/admin/login";
+    navigate("/login");
   };
 
   return (
