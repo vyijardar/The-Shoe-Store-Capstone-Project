@@ -1,13 +1,12 @@
 // api.js
 
 // Placeholder base URL (replace with the actual URL of your backend once ready)
-const API_BASE_URL = "http://localhost:3001/api"; // Update with the real backend URL when available
+const API_BASE_URL = "http://localhost:3001/api"; 
 
 // Function to fetch all users
 export const fetchUsers = async (token) => {
   try {
-    // Placeholder logic: Replace this with an actual API call when ready
-    const response = await fetch("http://localhost:3001/api/admin/users", {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +25,6 @@ export const fetchUsers = async (token) => {
 // Function to add a new user
 export const addUser = async (user, token) => {
   try {
-    // Placeholder logic: Replace this with an actual API call when ready
     const response = await fetch(`${API_BASE_URL}/admin/users`, {
       method: "POST",
       headers: {
@@ -48,7 +46,6 @@ export const addUser = async (user, token) => {
 // Function to update user information
 export const updateUser = async (id, userData, token) => {
   try {
-    // Placeholder logic: Replace this with an actual API call when ready
     const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: "PUT",
       headers: {
@@ -70,7 +67,6 @@ export const updateUser = async (id, userData, token) => {
 // Function to delete a user
 export const deleteUser = async (id, token) => {
   try {
-    // Placeholder logic: Replace this with an actual API call when ready
     const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
       method: "DELETE",
       headers: {
@@ -83,6 +79,67 @@ export const deleteUser = async (id, token) => {
     return await response.json();
   } catch (error) {
     console.error("Error deleting user:", error.message);
+    return null;
+  }
+};
+
+// Function to add a new product
+export const addProduct = async (product, token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/addproduct`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, 
+      },
+      body: JSON.stringify(product),
+    });
+   // Read raw response text
+   const rawData = await response.text();
+   console.log("Raw response:", rawData);
+    if (!response.ok) {
+      throw new Error("Failed to add product");
+    }
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      return await response.json();
+    } else {
+      throw new Error("Response is not in JSON format");
+    }
+  } catch (error) {
+    console.error("Error adding product:", error.message);
+    return null;
+  }
+};
+
+// Function to edit an existing product
+export const editProduct = async (id, product, token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, 
+      },
+      body: JSON.stringify(product),
+    });
+
+    // Read raw response text
+    const rawData = await response.text();
+    console.log("Raw response:", rawData);
+
+    if (!response.ok) {
+      throw new Error("Failed to update product");
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      return await response.json();
+    } else {
+      throw new Error("Response is not in JSON format");
+    }
+  } catch (error) {
+    console.error("Error updating product:", error.message);
     return null;
   }
 };

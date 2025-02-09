@@ -21,7 +21,7 @@ const app = express();
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { checkAdmin,isLoggedIn } = require('../middleware/auth');
+const { checkAdmin, isLoggedIn } = require('../middleware/auth');
 
 app.use(express.json());
 app.use(cors());
@@ -33,84 +33,86 @@ const path = require('path');
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')));
 app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets')));
 
-
+//Admin Dashboard
 app.get('/api/admin/dashboard', isLoggedIn, checkAdmin, async (req, res) => {
     try {
         const user = await adminDetails(req.user.id);
-        
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json({id: user.id,
+        res.json({
+            id: user.id,
             email: user.email,
             firstname: user.firstname,   // Ensure these columns exist in your database
             lastname: user.lastname,
             role: user.role,
         });
-        
+
     } catch (err) {
         console.error('Error fetching admin dashboard data:', err);
         next(err);
     }
 });
 
+//View all users on admin dashboard
 app.get('/api/admin/users', isLoggedIn, checkAdmin, async (req, res) => {
     try {
         const users = await adminDetails();
-        
+
         if (!users || users.length === 0) {
             return res.status(404).json({ error: 'No users found' });
-          }
+        }
         res.json(users);
-        
+
     } catch (err) {
         console.error('Error fetching admin dashboard data:', err);
         next(err);
     }
 });
-
+//Admin Login
 app.post('/api/admin/login', async (req, res) => {
     const { email, password } = req.body;
-  
+
     // Check if both email and password are provided
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+        return res.status(400).json({ error: 'Email and password are required' });
     }
-  
+
     try {
-      // Call the getAdminByEmail function to check for an admin user
-      const admin = await getAdminByEmail(email);
-  
-      // If admin is not found
-      if (!admin) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
-  
-      // Compare the entered password with the hashed password stored in the database
-      const isPasswordValid = await bcrypt.compare(password, admin.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ error: 'Invalid email or password' });
-      }
-  
-      // Generate a JWT token with user details
-      const token = jwt.sign(
-        { id: admin.id, email: admin.email, role: admin.role },
-        process.env.JWT_SECRET, // Use environment variable for your secret
-        { expiresIn: '1h' }
-      );
-  
-      // Send the token to the client
-      res.status(200).json({
-        message: 'Login successful',
-        token,
-        role: admin.role,
-      });
+        // Call the getAdminByEmail function to check for an admin user
+        const admin = await getAdminByEmail(email);
+
+        // If admin is not found
+        if (!admin) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        // Compare the entered password with the hashed password stored in the database
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        // Generate a JWT token with user details
+        const token = jwt.sign(
+            { id: admin.id, email: admin.email, role: admin.role },
+            process.env.JWT_SECRET, // Use environment variable for your secret
+            { expiresIn: '1h' }
+        );
+
+        // Send the token to the client
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            role: admin.role,
+        });
     } catch (ex) {
         console.log("Database error:", ex.message);
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
 });
-
+//Delete User on admin 
 app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
@@ -120,46 +122,16 @@ app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
         res.status(500).json({ error: "Failed to delete user" });
     }
 });
-app.get("/api/auth/users", checkAdmin, async (req, res) => {
-    try {
-        const users = await fetchUsers();
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to fetch users" });
-    }
-});
 
-app.post('/api/auth/login', async (req, res) => {
- 
-    try {
-        const { email, password } = req.body;
-    
-        console.log('Login request body:', req.body);
-        // Validate request
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required.' });
-        }
-        const { token, user } = await findUserByEmail(email, password);  // Ensure both are returned
-        console.log("Token:", token);
-        console.log("User:", user);  // Make sure this logs a user object
-
-        res.json({ token, user });
-       
-    } catch (err) {
-        console.log("Database error:", err.message);
-        // Differentiate between user errors and server errors
-        if (err.message === "User not found" || err.message === "Invalid password") {
-            res.status(401).json({ error: err.message });  // Unauthorized
-        } else {
-            res.status(500).json({ error: "Internal server error" });  // Server issue
-        }
-    }
-});
-
+//Fetch User account details
 app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
     try {
-        // Fetch user info from the database
-        const user = await findUserById(req.user.id); 
+        console.log("User from token:", req.user);
+        if (!req.user || !req.user.id) {
+            return res.status(400).json({ error: "Invalid token: User ID missing" });
+        }
+        const user = await findUserById(req.user.id);
+
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -179,7 +151,35 @@ app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
         next(ex);  // Pass error to error handler
     }
 });
+//User and admin Login
+app.post('/api/auth/login', async (req, res) => {
 
+    try {
+        const { email, password } = req.body;
+
+        console.log('Login request body:', req.body);
+        // Validate request
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
+        const { token, user } = await findUserByEmail(email, password);  // Ensure both are returned
+        console.log("Token:", token);
+        console.log("User:", user);  // Make sure this logs a user object
+
+        res.json({ token, user });
+
+    } catch (err) {
+        console.log("Database error:", err.message);
+        // Differentiate between user errors and server errors
+        if (err.message === "User not found" || err.message === "Invalid password") {
+            res.status(401).json({ error: err.message });  // Unauthorized
+        } else {
+            res.status(500).json({ error: "Internal server error" });  // Server issue
+        }
+    }
+});
+
+//User Logout
 app.post('/api/users/logout', async (req, res, next) => {
     try {
         res.json({ message: 'Logged out successfully' });
@@ -189,20 +189,12 @@ app.post('/api/users/logout', async (req, res, next) => {
     }
 });
 
-app.get('/api/users', async (req, res, next) => {
-    try {
-        res.send(await fetchUsers());
-    }
-    catch (ex) {
-        next(ex);
-    }
-});
-
+//Register user
 app.post('/api/users', async (req, res, next) => {
     try {
-        const { firstname,lastname, email, password, role } = req.body;
+        const { firstname, lastname, email, password, role } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+
         // Basic validation to ensure name, email, and password are present
         if (!firstname || !lastname || !email || !password) {
             return res.status(400).json({ error: 'Name, email, and password are required.' });
@@ -223,17 +215,16 @@ app.post('/api/users', async (req, res, next) => {
             firstname,
             lastname,
             email,
-            password:hashedPassword,
-            role: role || 'customer', // Default role is 'customer' if not provided
+            password: hashedPassword,
+            role: role || 'customer',
         });
 
-          // Generate a JWT token for the created user
-          const token = jwt.sign(
+        // Generate a JWT token for the created user
+        const token = jwt.sign(
             { userId: user.id, email: user.email },
-            process.env.JWT_SECRET,  // Use environment variable for the secret key
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
-        // Return the created user (or omit sensitive data like password)
         res.status(201).json({
             message: 'User created successfully',
             user: {
@@ -246,22 +237,23 @@ app.post('/api/users', async (req, res, next) => {
             token
         });
     } catch (ex) {
-        // Log the error for debugging and pass it to the error handler
         console.error(ex);
-        next(ex);  // This will be caught by an error-handling middleware
+        next(ex);
     }
 });
 
+//Fetch products
 app.get('/api/products', async (req, res, next) => {
     try {
 
         const products = await fetchProducts();
-        res.json(products); 
+        res.json(products);
     }
     catch (ex) {
         next(ex);
     }
 });
+//Fetch men products
 app.get("/api/products/men", async (req, res, next) => {
     try {
 
@@ -277,7 +269,7 @@ app.get("/api/products/men", async (req, res, next) => {
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
 });
-
+//Fetch women products
 app.get("/api/products/women", async (req, res, next) => {
     try {
         const result = await client.query("SELECT * FROM products WHERE gender = 'women'");
@@ -287,6 +279,8 @@ app.get("/api/products/women", async (req, res, next) => {
         res.status(500).send("Server Error");
     }
 });
+
+//Fetch Single Product
 app.get('/api/products/:id', async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -301,37 +295,75 @@ app.get('/api/products/:id', async (req, res, next) => {
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
 });
-app.post('/api/products/addproduct',checkAdmin, async (req, res, next) => {
-    try {
-        const { name, description, price, brand, category, gender, size, color, stock, image_urls } = req.body;
 
-        if (!name || !price || !category) {
-            return res.status(400).json({ error: 'Name, price, and category are required.' });
+//Add new product
+app.post('/api/products/addproduct', isLoggedIn, checkAdmin, async (req, res, next) => {
+    try {
+        console.log("Received product data:", req.body);
+
+        let { name, description, price, brand, category, gender, size, color, stock, image_urls } = req.body;
+
+        if (!name || !price || !category || !description || !brand || !gender || !size || !color || !stock || !image_urls) {
+            return res.status(400).json({ error: "All fields are required." });
         }
-        const product = await createProduct({ name, description, price, brand, category, gender, size, color, stock, image_urls });
-        res.status(201).json(product);
-    } catch (ex) {
-        next(ex);
-        res.status(500).json({ error: 'Internal server error' });
+
+        if (typeof size === "string") {
+            size = size.split(",").map((s) => s.trim());
+        }
+
+        if (!Array.isArray(image_urls)) {
+            image_urls = [image_urls];
+        }
+
+        const newProduct = await createProduct({ name, description, price, brand, category, gender, size, color, stock, image_urls });
+
+        if (!newProduct) {
+            return res.status(500).json({ error: "Failed to create product" });
+        }
+
+        return res.status(201).json(newProduct); // Ensure this sends a valid product
+    } catch (error) {
+        console.error("Error adding product:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
+//Update existing product
 app.put('/api/products/:id', checkAdmin, async (req, res, next) => {
-    const { id } = req.params;
-    const { name, description, price, image_urls, stock } = req.body;
+    const id = req.params.id;
+    const { name, price, description, brand, category, gender, size, color, stock, image_urls } = req.body;
 
     // Input validation (optional, you can enhance this)
     if (!name || !price || !stock) {
         return res.status(400).json({ message: 'Name, price, and stock are required.' });
     }
+    if (!Array.isArray(image_urls) || image_urls.length === 0) {
+        return res.status(400).json({ error: 'At least one valid image URL is required.' });
+    }
+
+    // Convert size array to a comma-separated string for storage
+    // const sizeString = Array.isArray(size) ? size : size?.split(",");
+
     try {
-        const product = await updateProduct(id, { name, description, price, image_urls, stock });
-        res.json(product); 
-    } catch (err) {
-        next(err); 
+        const product = await updateProduct(id, { 
+             name, 
+            price, 
+            description, 
+            brand, 
+            category, 
+            gender, 
+            size,
+            color, 
+            stock, 
+            image_urls });
+        res.json(product);
+    } catch (error) {
+        next(error);
     }
 });
-app.delete('/api/products/:id',checkAdmin, async (req, res, next) => {
+
+//Delete product
+app.delete('/api/products/:id', checkAdmin, async (req, res, next) => {
     try {
         const { id } = req.params;
         await deleteProduct({ id });
@@ -341,6 +373,7 @@ app.delete('/api/products/:id',checkAdmin, async (req, res, next) => {
     }
 });
 
+//Fetch all orders
 app.get('/api/orders', checkAdmin, async (req, res) => {
     try {
         // Query the database for orders by user ID
@@ -388,6 +421,7 @@ app.get('/api/orders', checkAdmin, async (req, res) => {
     }
 });
 
+//Update user details at checkout
 app.post('/api/checkout', async (req, res, next) => {
     try {
         const { userId, phone, address } = req.body;
@@ -438,35 +472,35 @@ const init = async () => {
 
     await Promise.all([
         createUser({
-            firstname:'John',
+            firstname: 'John',
             lastname: 'Doe',
             email: 'john@example.com',
             password: 'securepassword123',
             role: 'customer',
         }),
         createUser({
-            firstname:'Alice',
+            firstname: 'Alice',
             lastname: 'Smith',
             email: "alice@example.com",
             password: "strongpassword123",
             role: "customer"
         }),
         createUser({
-            firstname:'Emily',
+            firstname: 'Emily',
             lastname: 'Smith',
             email: "emilysmith@example.com",
             password: "emilysmith123",
             role: "customer"
         }),
         createUser({
-            firstname:'Robert',
+            firstname: 'Robert',
             lastname: 'Johnson',
             email: "robert@example.com",
             password: "adminpassword123",
             role: "admin"
         }),
         await createUser({
-            firstname:'Admin',
+            firstname: 'Admin',
             lastname: 'User',
             email: "admin@example.com",
             password: "adminpassword123",

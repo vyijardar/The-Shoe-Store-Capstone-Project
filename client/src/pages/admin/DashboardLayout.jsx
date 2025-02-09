@@ -1,38 +1,52 @@
-
+import React, { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
-import React from "react";
-import { useNavigate } from "react-router-dom";
 import "../../css/dashboard.css";
+import { useNavigate } from "react-router-dom";
 
-export default function DashboardLayout() {
-  const navigate = useNavigate()
+export default function DashboardLayout({setToken,setisLoggedIn}) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
-    navigate("/login");
+    setisLoggedIn(false);
+    setToken(null);
+    navigate('/login');
+  };
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   return (
-    <div className="dashboard-layout">
-      <aside className="sidebar">
-        <NavLink to="dashboard"   className={({ isActive }) => (isActive ? "active" : "")}>
-          Dashboard
-        </NavLink>
-        <NavLink to="products"  className={({ isActive }) => (isActive ? "active" : "")}>
-          Products
-        </NavLink>
-        <NavLink to="users"   className={({ isActive }) => (isActive ? "active" : "")}>
-          Users
-        </NavLink>
-        <NavLink to="orders"   className={({ isActive }) => (isActive ? "active" : "")}>
-          Orders
-        </NavLink>
-        <button onClick={handleLogout}>Logout</button>
+    <div className="dashboard-layout" style={{ display: "flex" }}>
+      {/* Sidebar */}
+      <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
+        <button className="toggle-btn" onClick={toggleSidebar}>
+          {isCollapsed ? "☰" : "✖"}
+        </button>
+        {!isCollapsed && (
+          <>
+            <NavLink to="/admin/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
+              Dashboard
+            </NavLink>
+            <NavLink to="/admin/products" className={({ isActive }) => (isActive ? "active" : "")}>
+              Products
+            </NavLink>
+            <NavLink to="/admin/users" className={({ isActive }) => (isActive ? "active" : "")}>
+              Users
+            </NavLink>
+            <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? "active" : "")}>
+              Orders
+            </NavLink>
+            <button onClick={handleLogout}>Logout</button>
+          </>
+        )}
       </aside>
-      <main className="content">
+
+      {/* Main Content */}
+      <main className="content" style={{ flex: 1 }}>
         <Outlet />
       </main>
     </div>
-
   );
 }

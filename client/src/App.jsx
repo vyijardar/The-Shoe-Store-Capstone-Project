@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import CartProvider from "./context/CartContext";
+import ProtectedRoute from "./utils/ProtectedRoute";
 import Navigations from "./components/Navigations";
 import Home from "./pages/Home";
 import Men from "./pages/Men";
@@ -27,22 +28,22 @@ import SizeChart from "./pages/SizeChart";
 import Dashboard from "./pages/admin/Dashboard";
 
 function App() {
-  const [cartCount, setCartCount] = useState(0);
+  const [cartItems, setCartItems] = useState(0);
   const [token, setToken] = useState(localStorage.getItem("adminToken"));
   const [isLoggedIn, setisLoggedIn] = useState(false);
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
-    setCartCount(totalQuantity);
+    setCartItems(totalQuantity);
   }, []);
 
   return (
     <div id="page">
-      <CartProvider cartCount={cartCount} token={token} setToken={setToken}>
+      <CartProvider cartItems={cartItems} token={token} setToken={setToken}>
         <Router>
           <Content 
-            cartCount={cartCount} 
+            cartItems={cartItems} 
             token={token} 
             setToken={setToken} 
             setisLoggedIn={setisLoggedIn} 
@@ -53,7 +54,7 @@ function App() {
   );
 }
 
-function Content({ cartCount, token, setToken, setisLoggedIn ,setCartCount}) {
+function Content({ cartItems, token, setToken, setisLoggedIn ,setCartItems}) {
   const location = useLocation();
 
   // Check if the current route is an admin route
@@ -62,11 +63,11 @@ function Content({ cartCount, token, setToken, setisLoggedIn ,setCartCount}) {
   return (
     <>
       {/* Only show Navigations and Footer if not on admin routes */}
-      {!isAdminRoute && <Navigations cartCount={cartCount} token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />}
+      {!isAdminRoute && <Navigations cartItems={cartItems} token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />}
 
       <Routes>
         {/* Admin Routes Nested under DashboardLayout */}
-        <Route path="/admin" element={<DashboardLayout token={token} />}>
+        <Route path="/admin" element={<ProtectedRoute><DashboardLayout token={token}  setToken={setToken} setisLoggedIn={setisLoggedIn} /> </ProtectedRoute>}>
           <Route path="dashboard" element={<Dashboard token={token} />} />
           <Route path="products" element={<Products />} />
           <Route path="users" element={<Users />} />
@@ -79,14 +80,14 @@ function Content({ cartCount, token, setToken, setisLoggedIn ,setCartCount}) {
         <Route path="/" element={<Home token={token} setToken={setToken} />} />
         <Route path="/men" element={<Men />} />
         <Route path="/women" element={<Women />} />
-        <Route path='/products/:id' element={<ProductDetail setCartCount={setCartCount} />} />
+        <Route path='/products/:id' element={<ProductDetail setCartItems={setCartItems} />} />
         <Route path="/cart" element={<Cartpage token={token} setToken={setToken} />} />
         <Route path="/login" element={<Login token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
         <Route path="/signup" element={<SignUp token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
         <Route path="/about" element={<About token={token} setToken={setToken} />} />
         <Route path="/checkout" element={<Checkout token={token} setToken={setToken} />} />
         <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken} />} />
-        <Route path="/account" element={<UserAccount token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
+        <Route path="/account" element={<ProtectedRoute><UserAccount token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} /> </ProtectedRoute>} />
         <Route path="/contact" element={<ContactPage token={token} setToken={setToken} />} />
         <Route path="/shoe-care" element={<ShoeCare />} />
         <Route path="/faqs" element={<FAQs />} />

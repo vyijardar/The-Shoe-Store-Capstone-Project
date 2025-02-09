@@ -4,10 +4,10 @@ const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/s
 const uuid = require('uuid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const JWT= process.env.JWT_SECRET || 'your_jwt_secret'
+const JWT = process.env.JWT_SECRET || 'your_jwt_secret'
 const createTables = async () => {
   const SQL = `
-    
+    DROP TABLE IF EXISTS users CASCADE;
     DROP TABLE IF EXISTS products CASCADE;
     DROP TABLE IF EXISTS orders CASCADE;
     DROP TABLE IF EXISTS order_items CASCADE;
@@ -32,7 +32,7 @@ const createTables = async () => {
     brand VARCHAR(255),
     category VARCHAR(255),
     gender VARCHAR(10) CHECK (gender IN ('men', 'women', 'unisex')),
-    size JSON,
+    size TEXT[],
     color VARCHAR(50),
     stock INT DEFAULT 0,
     image_url TEXT,
@@ -62,9 +62,9 @@ const createTables = async () => {
 
 }
 
-const createUser = async ({ firstname, lastname, email, password,  role = 'customer' }) => {
+const createUser = async ({ firstname, lastname, email, password, role = 'customer' }) => {
   try {
-    
+
     const SQL = `INSERT INTO users(id, firstname,lastname, email, password, role, created_at, updated_at) 
                   values($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING *`;
     const response = await client.query(SQL, [uuid.v4(), firstname, lastname, email, await bcrypt.hash(password, 10), role]);
@@ -76,19 +76,43 @@ const createUser = async ({ firstname, lastname, email, password,  role = 'custo
   }
 }
 
-const createProduct = async ({ name, description, price, brand, category, gender, size, color, stock, image_urls }) => {
+const createProduct = async ({ name, price, description, brand, category, gender, size, color, stock, image_urls }) => {
   try {
-    const SQL = `INSERT INTO products(id, name, description, price, brand, category, gender, size, color, stock, image_urls, created_at, updated_at)
-    values($1, $2, $3, $4, $5, $6, $7,$8, $9, $10,$11, NOW(), NOW()) RETURNING *`;
-    const response = await client.query(SQL, [uuid.v4(), name, description, price, brand, category, gender, JSON.stringify(size), color, stock, image_urls]);
-    // return products.rows;
+    // Allowed gender values
+    const normalizedGender = gender.toLowerCase(); // Normalize input
+    const validGenders = ['men', 'women', 'unisex']; // Allowed values
+
+    if (!validGenders.includes(normalizedGender)) {
+      throw new Error(`Invalid gender value: '${gender}'. Allowed values: men, women, unisex`);
+    }
+
+
+    const SQL = `
+          INSERT INTO products (name, price, description, brand, category, gender, size, color, stock, image_urls)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          RETURNING *;
+      `;
+
+    const response = await client.query(SQL, [
+      name,
+      price,
+      description,
+      brand,
+      category,
+      normalizedGender,  // Ensure gender is properly formatted
+      size,
+      color,
+      stock,
+      image_urls
+    ]);
+
     return response.rows[0];
   } catch (error) {
-    console.error("Error creating user:", error);
-    throw new Error('Failed to create user');
+    console.error("Error creating product:", error);
+    throw new Error("Failed to create product");
   }
+};
 
-}
 
 async function findUserByEmail(email, password) {
   const SQL = `SELECT id, email, password, role FROM users WHERE email = $1`;
@@ -97,28 +121,28 @@ async function findUserByEmail(email, password) {
 
   console.log("Query result:", result.rows);
   if (result.rows.length === 0) {
-      throw new Error('User not found');
+    throw new Error('User not found');
   }
 
   const user = result.rows[0];
 
   const validPassword = await bcrypt.compare(password, user.password);
   if (!validPassword) {
-      throw new Error('Invalid password');
+    throw new Error('Invalid password');
   }
 
   const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT // Make sure this is defined
+    { id: user.id, email: user.email, role: user.role },
+    JWT // Make sure this is defined
   );
-  
+
   console.log("Generated token:", token);
   console.log("Returning user:", user);  // Ensure user info is logged correctly
 
   return { token, user };  // Ensure both are returned
 }
 async function adminDetails() {
-  const SQL =`SELECT id, email, firstname, lastname, role FROM users`;
+  const SQL = `SELECT id, email, firstname, lastname, role FROM users`;
   const result = await client.query(SQL);
   console.log('Query result:', result.rows);
   return result.rows;
@@ -126,21 +150,21 @@ async function adminDetails() {
 // Utility function to generate a JWT token
 function generateToken(user) {
   return jwt.sign(
-      { id: user.id, email: user.email, role: user.role },JWT );
+    { id: user.id, email: user.email, role: user.role }, JWT);
 }
 async function findUserById(id) {
   const query = 'SELECT * FROM users WHERE id = $1';
   const values = [id];
 
   try {
-      const result = await client.query(query, values);
-      if (result.rows.length === 0) {
-          return null;  // User not found
-      }
-      return result.rows[0];  // Return the user data
+    const result = await client.query(query, values);
+    if (result.rows.length === 0) {
+      return null;  // User not found
+    }
+    return result.rows[0];  // Return the user data
   } catch (error) {
-      console.error('Database error:', error.message);
-      throw new Error('Database query failed');
+    console.error('Database error:', error.message);
+    throw new Error('Database query failed');
   }
 }
 
@@ -153,23 +177,23 @@ const fetchUsers = async () => {
     console.error("Error creating user:", error);
     throw new Error('Failed to create user');
   }
- 
+
 };
 const updateUser = async ({ userId, phone, address }) => {
   try {
-      // SQL query to update the user's phone and address during checkout
-      const SQL = `UPDATE users 
+    // SQL query to update the user's phone and address during checkout
+    const SQL = `UPDATE users 
                    SET phone = $1, address = $2, updated_at = NOW() 
                    WHERE id = $3 RETURNING *`;
 
-      // Execute the query
-      const response = await client.query(SQL, [phone, address, userId]);
+    // Execute the query
+    const response = await client.query(SQL, [phone, address, userId]);
 
-      // Return the updated user data
-      return response.rows[0];
+    // Return the updated user data
+    return response.rows[0];
   } catch (error) {
-      console.error("Error updating user during checkout:", error);
-      throw new Error('Failed to update user during checkout');
+    console.error("Error updating user during checkout:", error);
+    throw new Error('Failed to update user during checkout');
   }
 };
 
@@ -204,45 +228,53 @@ const fetchProducts = async () => {
     console.error("Error creating user:", error);
     throw new Error('Failed to create user');
   }
- 
+
 };
 
 const fetchSingleProduct = async (id) => {
   try {
     const { rows } = await client.query('SELECT * FROM products WHERE id = $1::UUID', [id]);
-    return rows[0]; // Return the first (and only) product found
+    return rows[0];
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;
   }
 };
 
-const updateProduct = async (id) => {
+const updateProduct = async (id,productData) => {
   try {
-          // SQL query to update the product in the database
-          const result = await client.query(
-              `UPDATE products SET name = $1, description = $2, price = $3, image_urls = $4, stock = $5
-              WHERE id = $6 RETURNING *`, [name, description, price, image_urls, stock, id] );
-  
-          if (result.rows.length === 0) {
-              return res.status(404).json({ message: 'Product not found.' });
-          }
-          return result.rows[0]; // Return updated product
-      } catch (ex) {
-          next(ex)
-          console.error(err.message);
-          res.status(500).send('Server Error');
-      }
+    const { name, price, description, brand, category, gender, size, color, stock, image_urls } = productData;
+    // const sizeArray = Array.isArray(size) ? size : size.split(",");
+    const result = await client.query(
+      `UPDATE products 
+       SET name = $1, price = $2, description = $3, brand = $4, category = $5, 
+           gender = $6, size = $7, color = $8, stock = $9, image_urls = $10
+       WHERE id = $11 RETURNING *`,
+      [name, price, description, brand, category, gender, size, color, stock, image_urls, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+    return result.rows[0]; // Return updated product
+  } catch (error) {
+    console.error("Database error:", error.message);
+    throw error;
+  }
 }
 const deleteProduct = async ({ id }) => {
   try {
+    const result = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
     const SQL = ` DELETE FROM products WHERE id=$1`;
-    await client.query(SQL, [user_id, id]);
+    await client.query(SQL, [ id]);
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;
   }
-  
+
 };
 module.exports = {
   client,

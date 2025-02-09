@@ -6,7 +6,7 @@ import { Carousel } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faMinus, faPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
-export default function ProductDetail({ setCartCount }) {
+export default function ProductDetail() {
     const { id } = useParams();
     const navigate = useNavigate(); 
 
@@ -15,7 +15,7 @@ export default function ProductDetail({ setCartCount }) {
     const [quantity, setQuantity] = useState(1); 
     const [selectedSize, setSelectedSize] = useState(null); 
     const [selectedWidth, setSelectedWidth] = useState(null); 
-    const { addToCart } = useContext(CartContext);
+    const { addToCart, cartItems  } = useContext(CartContext);
 
     // Handle quantity increment and decrement
     function incrementQuantity() {
@@ -63,9 +63,9 @@ export default function ProductDetail({ setCartCount }) {
 
         localStorage.setItem("cart", JSON.stringify(savedCart));
 
-        // Calculate the new cart count and update the state
-        const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
-        setCartCount(totalQuantity);
+        // // Calculate the new cart count and update the state
+        // const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
+        // setCartItems(totalQuantity);
 
         alert(`Added ${quantity} item(s) of "${product.title}" to the cart.`);
         addToCart({ ...product, quantity: 1 })
@@ -83,12 +83,12 @@ export default function ProductDetail({ setCartCount }) {
         fetchProduct();
     }, [id]);
 
-    // Get cart count from localStorage on component mount
-    useEffect(() => {
-        const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
-        const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
-        setCartCount(totalQuantity);
-    }, []);
+    // // Get cart count from localStorage on component mount
+    // useEffect(() => {
+    //     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    //     const totalQuantity = savedCart.reduce((acc, item) => acc + item.quantity, 0);
+    //     setCartItems(totalQuantity);
+    // }, []);
 
     // The following `if` checks the product state after hook initializations
     if (!product) {

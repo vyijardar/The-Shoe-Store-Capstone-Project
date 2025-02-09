@@ -15,25 +15,6 @@ export default function CartProvider({ children }) {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-
-  // // Function to add an item to the cart
-  // const addToCart = (item) => {
-  //   setCartItems((prev) => {
-  //     const existingItem = prev.find((cartItem) => cartItem.id === item.id);
-  //     if (existingItem) {
-  //       // If the item already exists, update its quantity
-  //       return prev.map((cartItem) =>
-  //         cartItem.id === item.id
-  //           ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
-  //           : cartItem
-  //       );
-  //     } else {
-  //       // If the item is new, add it to the cart
-  //       return [...prev, item];
-  //     }
-  //   });
-  // };
-
   // Function to add item to cart
   const addToCart = (product) => {
     setCartItems((prevCart) => {

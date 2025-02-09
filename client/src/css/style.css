@@ -2755,4 +2755,46 @@ input[type="text"] {
     overflow-y: auto;
     background-color: #ffffff;
   }
+  .scrollable-cell {
+    max-height: 100px;  /* Adjust height as needed */
+    overflow-y: auto;   /* Vertical scrolling */
+    white-space: normal; /* Allow text to wrap */
+    word-wrap: break-word; /* Break long words */
+  }
   
+  .scrollable-cell::-webkit-scrollbar {
+    width: 5px; /* Thin scrollbar */
+  }
+  
+  .scrollable-cell::-webkit-scrollbar-thumb {
+    background-color: #888; 
+    border-radius: 5px; 
+  }
+  
+  .scrollable-cell::-webkit-scrollbar-thumb:hover {
+    background-color: #555; 
+  }
+
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;      /* Full viewport width */
+    height: 100vh;     /* Full viewport height */
+    background: rgba(0, 0, 0, 0.5);  /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal form {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 95vw;         /* Use almost full width of the viewport */
+    max-width: 1200px;   /* Optional: set a max width if needed */
+    max-height: 90vh;    /* Control vertical overflow */
+    overflow-y: auto;    /* Scroll if content overflows vertically */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
