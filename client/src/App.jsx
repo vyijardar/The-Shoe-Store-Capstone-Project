@@ -20,7 +20,6 @@ import Users from "./pages/admin/Users";
 import Footer from './components/Footer';
 import UserAccount from './pages/UserAccount';
 import About from './pages/About';
-import OrderConfirmation from './components/OrderConfirmation';
 import ShoeCare from "./pages/Shoecare";
 import FAQs from "./pages/FAQs";
 import ShippingAndReturns from "./pages/ShippingAndReturns";
@@ -87,7 +86,6 @@ function Content({ cartItems, token, setToken, setisLoggedIn ,setCartItems}) {
         <Route path="/signup" element={<SignUp token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} />} />
         <Route path="/about" element={<About token={token} setToken={setToken} />} />
         <Route path="/checkout" element={<Checkout token={token} setToken={setToken} />} />
-        <Route path="/orderconfirm" element={<OrderConfirmation token={token} setToken={setToken} />} />
         <Route path="/account" element={<ProtectedRoute><UserAccount token={token} setToken={setToken} setisLoggedIn={setisLoggedIn} /> </ProtectedRoute>} />
         <Route path="/contact" element={<ContactPage token={token} setToken={setToken} />} />
         <Route path="/shoe-care" element={<ShoeCare />} />
