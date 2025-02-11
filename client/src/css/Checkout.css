@@ -1,123 +1,134 @@
 .checkout-container {
-    max-width: 600px;
-    margin: auto;
-    padding: 1rem;
-    font-family: Arial, sans-serif;
-  }
-   .checkout-step {
-    margin-bottom: 2rem;
-  }
-   .progress-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 2rem;
+  max-width: 600px;
+  margin: auto;
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+}
+ .checkout-step {
+  margin-bottom: 2rem;
+}
+ /* .progress-bar {
+  ! display: inline-flex; */
+  /*! justify-content: space-around; */
+  /*! margin-bottom: 2rem;
+} */
+ .progress-step {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 25px;
+  position: relative;
+  background-color: #e0e0e0;
+  color: #555;
+  font-weight: 600;
+  border-radius: 4px;
+  margin: 0 0.25rem;
+  transition: background-color 0.3s;
+  display: inline-block;
+}
+.progress-bar {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--bs-progress-bar-color);
+  text-align: center;
+  white-space: nowrap;
+  background-color: var(--bs-progress-bar-bg);
+  transition: var(--bs-progress-bar-transition);
+}
+ .progress-step.active {
+  background-color: #007bff;
+  color: #fff;
+}
+ /******************************************
+   Forms
+******************************************/
+.checkout-step form label,
+.checkout-step label {
+  display: block;
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+ .checkout-step label input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+ .checkout-step label input[type="radio"],
+.checkout-step label input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: scale(1.1); /* Larger checkboxes/radio for better tap target */
+}
+ /******************************************
+   Buttons
+******************************************/
+.button-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+ .button-row button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+ .button-row button:hover {
+  background-color: #0056b3;
+}
+ /******************************************
+   Order Summary & Review
+******************************************/
+.order-summary > div {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+ .order-summary img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+ .cost-breakdown p {
+  margin: 0.25rem 0;
+}
+ .cost-breakdown h3 {
+  margin-top: 0.75rem;
+}
+ .address-recap {
+  margin-top: 1rem;
+}
+ .address-recap p {
+  margin: 0.25rem 0;
+}
+ /******************************************
+   Confirmation
+******************************************/
+.checkout-step h2 {
+  margin-bottom: 1rem;
+}
+ /******************************************
+   Responsive: Adjust layout for mobile
+******************************************/
+@media (max-width: 600px) {
+  .progress-bar {
+    flex-direction: column;
+    gap: 0.5rem;
   }
    .progress-step {
-    flex: 1;
-    text-align: center;
-    padding: 0.75rem 0;
-    position: relative;
-    background-color: #e0e0e0;
-    color: #555;
-    font-weight: 600;
-    border-radius: 4px;
-    margin: 0 0.25rem;
-    transition: background-color 0.3s;
+    margin: 0;
   }
-   .progress-step.active {
-    background-color: #007bff;
-    color: #fff;
+   .button-row {
+    flex-direction: column;
+    gap: 1rem;
   }
-   /******************************************
-     Forms
-  ******************************************/
-  .checkout-step form label,
-  .checkout-step label {
-    display: block;
-    margin-bottom: 0.75rem;
-    line-height: 1.4;
-    font-size: 0.9rem;
-  }
-   .checkout-step label input[type="text"] {
-    width: 100%;
-    padding: 0.5rem;
-    margin-top: 0.25rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-   .checkout-step label input[type="radio"],
-  .checkout-step label input[type="checkbox"] {
-    margin-right: 0.5rem;
-    transform: scale(1.1); /* Larger checkboxes/radio for better tap target */
-  }
-   /******************************************
-     Buttons
-  ******************************************/
-  .button-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 1rem;
-  }
-   .button-row button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-  }
-   .button-row button:hover {
-    background-color: #0056b3;
-  }
-   /******************************************
-     Order Summary & Review
-  ******************************************/
-  .order-summary > div {
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-  }
-   .order-summary img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-  }
-   .cost-breakdown p {
-    margin: 0.25rem 0;
-  }
-   .cost-breakdown h3 {
-    margin-top: 0.75rem;
-  }
-   .address-recap {
-    margin-top: 1rem;
-  }
-   .address-recap p {
-    margin: 0.25rem 0;
-  }
-   /******************************************
-     Confirmation
-  ******************************************/
-  .checkout-step h2 {
-    margin-bottom: 1rem;
-  }
-   /******************************************
-     Responsive: Adjust layout for mobile
-  ******************************************/
-  @media (max-width: 600px) {
-    .progress-bar {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-     .progress-step {
-      margin: 0;
-    }
-     .button-row {
-      flex-direction: column;
-      gap: 1rem;
-    }
-  }
-  
- 
+}
+

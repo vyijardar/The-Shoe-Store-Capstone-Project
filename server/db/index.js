@@ -10,6 +10,7 @@ const {
     deleteProduct,
     updateProduct,
     updateUser,
+    deleteUser,
     getAdminByEmail,
     findUserByEmail,
     findUserById,
@@ -70,6 +71,7 @@ app.get('/api/admin/users', isLoggedIn, checkAdmin, async (req, res) => {
         next(err);
     }
 });
+
 //Admin Login
 app.post('/api/admin/login', async (req, res) => {
     const { email, password } = req.body;
@@ -108,25 +110,55 @@ app.post('/api/admin/login', async (req, res) => {
             role: admin.role,
         });
     } catch (ex) {
-        console.log("Database error:", ex.message);
         res.status(500).json({ error: "An error occurred while fetching the product" });
     }
 });
-//Delete User on admin 
-app.delete("/api/auth/users/:id", checkAdmin, async (req, res) => {
+
+
+// Update user information
+app.put('/api/admin/users/:id', isLoggedIn, checkAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { email, phone, address, role} = req.body; // Adjust fields as needed
+
     try {
-        const { id } = req.params;
-        await deleteUser(id);
-        res.sendStatus(204);
+        const user = await findUserById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Only allow admins to change role
+        if (role && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Only admins can change user roles' });
+        }
+
+        const updatedUser = await updateUser({ userId: id, email, phone, address, role });
+        return res.json(updatedUser);
     } catch (error) {
-        res.status(500).json({ error: "Failed to delete user" });
+        console.error('Error updating user:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+//Delete User on admin   
+app.delete("/api/admin/users/:id", checkAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await findUserById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await deleteUser(id);
+        return res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
 //Fetch User account details
 app.get('/api/auth/me', isLoggedIn, async (req, res, next) => {
     try {
-        console.log("User from token:", req.user);
         if (!req.user || !req.user.id) {
             return res.status(400).json({ error: "Invalid token: User ID missing" });
         }
@@ -157,25 +189,44 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        console.log('Login request body:', req.body);
-        // Validate request
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required.' });
         }
-        const { token, user } = await findUserByEmail(email, password);  // Ensure both are returned
-        console.log("Token:", token);
-        console.log("User:", user);  // Make sure this logs a user object
-
+        const { token, user } = await findUserByEmail(email, password);  
+       
         res.json({ token, user });
 
     } catch (err) {
-        console.log("Database error:", err.message);
-        // Differentiate between user errors and server errors
+
+   
         if (err.message === "User not found" || err.message === "Invalid password") {
-            res.status(401).json({ error: err.message });  // Unauthorized
+            res.status(401).json({ error: err.message }); 
         } else {
-            res.status(500).json({ error: "Internal server error" });  // Server issue
+            res.status(500).json({ error: "Internal server error" }); 
         }
+    }
+});
+//Search Result Query
+app.get('/api/products/search', async (req, res) => {
+    const query = req.query.q; 
+    
+    if (!query || query.trim() === '') {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    try {
+        const results = await client.query(
+            `SELECT * FROM products WHERE 
+             name ILIKE $1 OR 
+             gender ILIKE $1 OR 
+             category ILIKE $1 OR 
+             description ILIKE $1`,
+            [`%${query}%`]
+        );
+        res.json(results.rows);
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 
@@ -193,7 +244,6 @@ app.post('/api/users/logout', async (req, res, next) => {
 app.post('/api/users', async (req, res, next) => {
     try {
         const { firstname, lastname, email, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Basic validation to ensure name, email, and password are present
         if (!firstname || !lastname || !email || !password) {
@@ -215,7 +265,7 @@ app.post('/api/users', async (req, res, next) => {
             firstname,
             lastname,
             email,
-            password: hashedPassword,
+            password,
             role: role || 'customer',
         });
 
@@ -285,7 +335,7 @@ app.get('/api/products/:id', async (req, res, next) => {
     try {
         const { id } = req.params;
         const product = await fetchSingleProduct(req.params.id); // Replace with your database logic
-        console.log(`Fetching product with ID: ${id}`);
+       
         if (!product) {
             return res.status(404).json({ error: "Product not found" });
         }
@@ -299,8 +349,7 @@ app.get('/api/products/:id', async (req, res, next) => {
 //Add new product
 app.post('/api/products/addproduct', isLoggedIn, checkAdmin, async (req, res, next) => {
     try {
-        console.log("Received product data:", req.body);
-
+    
         let { name, description, price, brand, category, gender, size, color, stock, image_urls } = req.body;
 
         if (!name || !price || !category || !description || !brand || !gender || !size || !color || !stock || !image_urls) {
@@ -345,17 +394,18 @@ app.put('/api/products/:id', checkAdmin, async (req, res, next) => {
     // const sizeString = Array.isArray(size) ? size : size?.split(",");
 
     try {
-        const product = await updateProduct(id, { 
-             name, 
-            price, 
-            description, 
-            brand, 
-            category, 
-            gender, 
+        const product = await updateProduct(id, {
+            name,
+            price,
+            description,
+            brand,
+            category,
+            gender,
             size,
-            color, 
-            stock, 
-            image_urls });
+            color,
+            stock,
+            image_urls
+        });
         res.json(product);
     } catch (error) {
         next(error);
@@ -372,6 +422,7 @@ app.delete('/api/products/:id', checkAdmin, async (req, res, next) => {
         next(ex)
     }
 });
+
 
 //Fetch all orders
 app.get('/api/orders', checkAdmin, async (req, res) => {
@@ -458,18 +509,13 @@ app.post('/api/checkout', async (req, res, next) => {
 
 
 app.use((err, req, res, next) => {
-    console.log(err);
     res.status(err.status || 500).send({ error: err.message ? err.message : err });
 });
 
 const init = async () => {
     const port = process.env.PORT || 3001;
     await client.connect();
-    console.log('connected to database');
-
     await createTables();
-    console.log('tables created');
-
     await Promise.all([
         createUser({
             firstname: 'John',
@@ -505,11 +551,25 @@ const init = async () => {
             email: "admin@example.com",
             password: "adminpassword123",
             role: "admin"
+        }),
+        await createUser({
+            firstname: 'Delete',
+            lastname: 'User',
+            email: "delete@example.com",
+            password: "adminpassword123",
+            role: "customer"
+        }),
+        await createUser({
+            firstname: 'Update',
+            lastname: 'User',
+            email: "customer@example.com",
+            password: "adminpassword123",
+            role: "admin"
         })
     ]);
-    const users = await fetchUsers();
-    console.log('users created', users);
-    console.log(await fetchUsers());
+
+   await fetchUsers();
+
     await Promise.all([
         createProduct({
             name: "Nike C1TY “Safety Cone",
@@ -518,7 +578,7 @@ const init = async () => {
             brand: "Nike",
             category: "Casual Sneakers",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 11.5, 12, 12.5, 13, 13.5],
             color: "Grey",
             stock: 50,
             image_urls: [
@@ -535,7 +595,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6],
             color: "Red",
             stock: 35,
             image_urls: [
@@ -552,7 +612,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 12.5, 13, 13.5],
             color: "Blue",
             stock: 20,
             image_urls: [
@@ -569,7 +629,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 13, 13.5],
             color: "White",
             stock: 18,
             image_urls: [
@@ -586,7 +646,7 @@ const init = async () => {
             brand: "Nike",
             category: "Casual Sneakers",
             gender: 'women',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 8, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13.5],
             color: "Pink",
             stock: 50,
             image_urls: [
@@ -603,7 +663,7 @@ const init = async () => {
             brand: "Nike",
             category: "Running Shoes",
             gender: 'women',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 8, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "White",
             stock: 35,
             image_urls: [
@@ -637,7 +697,7 @@ const init = async () => {
             brand: "Puma",
             category: "Casual Shoes",
             gender: 'women',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Black",
             stock: 20,
             image_urls: [
@@ -654,7 +714,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'women',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 8, 8.5, 9.5, 10.5, 11, 11.5, 12.5, 13, 13.5],
             color: "Red",
             stock: 15,
             image_urls: [
@@ -671,7 +731,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11.5, 12, 12.5,],
             color: "Red",
             stock: 17,
             image_urls: [
@@ -688,7 +748,7 @@ const init = async () => {
             brand: "Puma",
             category: "Sneakers",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5],
             color: "White",
             stock: 27,
             image_urls: [
@@ -705,7 +765,7 @@ const init = async () => {
             brand: "Adidas",
             category: "Soccer Shoes",
             gender: 'men',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7, 7.5, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
             color: "Light Pink",
             stock: 27,
             image_urls: [
@@ -722,7 +782,7 @@ const init = async () => {
             brand: "Adidas",
             category: "Casual Shoes",
             gender: 'women',
-            size: [6, 6.5, 7, 7.5, 8, 8.5, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5],
+            size: [6, 6.5, 7.5, 8, 8.5, 9.5, 10, 11.5, 12, 12.5, 13],
             color: "Core Black ",
             stock: 7,
             image_urls: [
@@ -735,9 +795,7 @@ const init = async () => {
 
 
     ])
-    const products = await fetchProducts();
-    console.log(products);
-
-    app.listen(port, () => console.log(`listening on port ${port}`));
+    await fetchProducts();
+    app.listen(port);
 };
 init();

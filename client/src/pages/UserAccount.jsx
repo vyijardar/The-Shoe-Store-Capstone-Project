@@ -17,14 +17,13 @@ export default function UserAccount({ token }) {
                 },
             });
         
-            console.log("Token sent:", token);
+          
             if (!response.ok) {
                 console.error("Response not OK:", response.status, response.statusText);
                 throw new Error("Failed to fetch account info");
             }
             const data = await response.json();
             setAccountInfo(data);
-            console.log("account info:", data);
         } catch (error) {
             console.error("Failed to fetch account info", error);
         }

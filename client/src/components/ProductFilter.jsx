@@ -14,7 +14,6 @@ export default function ProductFilter({ onFilterChange }) {
       try {
         const response = await fetch("http://localhost:3001/api/products");
         const result = await response.json();
-        console.log("Fetched products:", result); // Debugging line
         setProducts(result);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -27,7 +26,16 @@ export default function ProductFilter({ onFilterChange }) {
   // Extract unique filter options
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))];
-  const sizes = [...new Set(products.flatMap((p) => p.size || []))];
+  const sizes = [...new Set(products.flatMap((p) => p.size || []))].sort((a, b) => {
+    // Convert sizes to numbers if they are numeric, otherwise sort alphabetically
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+  
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB; 
+    }
+    return a.localeCompare(b); 
+  });
   const colors = ["Black", "White", "Red", "Blue", "Green", "Brown"];
 
   // Toggle color selection
@@ -113,26 +121,30 @@ export default function ProductFilter({ onFilterChange }) {
         </div>
 
         {/* Size Filter */}
+        {/* Size Filter */}
         <div className="col-sm-12">
           <div className="side border mb-1">
             <h3>Size</h3>
             <div className="block-26">
-              <ul>
+              <ul className="d-flex flex-wrap">
                 {sizes.map((sizeOption) => (
-                  <li key={sizeOption}>
-                    <button
-                      type="button"
-                      className={`btn ${size === sizeOption ? "btn-primary" : "btn-outline-primary"}`}
-                      onClick={() => setSize(sizeOption)}
+                  <li key={sizeOption} className="me-2">
+                    <div
+                      className={`p-2 size-filter border rounded ${size === sizeOption ? "bg-primary text-white" : "bg-light"}`}
+                      onClick={
+                        () =>{ setSize(sizeOption);
+                              handleFilterUpdate();
+                            }}
                     >
                       {sizeOption}
-                    </button>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
         </div>
+
 
         {/* Color Filter */}
         <div className="col-sm-12">

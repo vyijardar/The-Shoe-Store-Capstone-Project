@@ -43,8 +43,7 @@ export default function Register({ setToken }) {
             return;
         }
     
-        setError({}); // Reset any previous errors
-        console.log("Submitting registration data:", { firstname, lastname, email, password });
+        setError({});
 
         try {
             const response = await fetch("http://localhost:3001/api/users", {
@@ -61,7 +60,7 @@ export default function Register({ setToken }) {
             });
 
             const result = await response.json();
-            console.log("API response:", result);
+          
 
             if (response.ok) {
                 if (result.token) {

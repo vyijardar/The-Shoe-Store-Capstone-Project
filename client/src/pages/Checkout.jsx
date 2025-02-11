@@ -166,7 +166,7 @@ export default function CheckoutFlow() {
     </form>
   );
 
-  const renderReview = () => (
+   const renderReview = () => (
     <div>
       <h4>Review Your Order</h4>
       <div>

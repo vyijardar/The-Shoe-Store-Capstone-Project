@@ -6,8 +6,7 @@ const findUserWithToken = async (token) => {
     try {
         // Verify and decode token
         const payload = jwt.verify(token, JWT);
-        console.log('Decoded Payload:', payload);  
-
+     
         const userId = payload.id;
 
         // Query the database to find the user
@@ -18,10 +17,10 @@ const findUserWithToken = async (token) => {
             throw new Error('Unauthorized: User not found');
         }
 
-        return response.rows[0]; // Return user details (id, email, role)
+        return response.rows[0]; 
     } catch (error) {
         console.error('Error in findUserWithToken:', error);
-        error.status = 401; // Set unauthorized status
+        error.status = 401; 
         throw error;
     }
 };

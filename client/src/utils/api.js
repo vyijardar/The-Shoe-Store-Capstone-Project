@@ -22,26 +22,6 @@ export const fetchUsers = async (token) => {
   }
 };
 
-// Function to add a new user
-export const addUser = async (user, token) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(user),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to add user");
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error adding user:", error.message);
-    return null;
-  }
-};
 
 // Function to update user information
 export const updateUser = async (id, userData, token) => {
@@ -94,9 +74,7 @@ export const addProduct = async (product, token) => {
       },
       body: JSON.stringify(product),
     });
-   // Read raw response text
-   const rawData = await response.text();
-   console.log("Raw response:", rawData);
+
     if (!response.ok) {
       throw new Error("Failed to add product");
     }
@@ -123,9 +101,6 @@ export const editProduct = async (id, product, token) => {
       body: JSON.stringify(product),
     });
 
-    // Read raw response text
-    const rawData = await response.text();
-    console.log("Raw response:", rawData);
 
     if (!response.ok) {
       throw new Error("Failed to update product");
@@ -141,5 +116,20 @@ export const editProduct = async (id, product, token) => {
   } catch (error) {
     console.error("Error updating product:", error.message);
     return null;
+  }
+};
+
+
+export const fetchProductsBySearch = async (query) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) {
+          throw new Error('Failed to fetch search results');
+      }
+      const result = await response.json();
+      return result;
+  } catch (error) {
+      console.error('Error fetching search results:', error);
+      return [];
   }
 };

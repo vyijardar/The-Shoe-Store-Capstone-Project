@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { fetchUsers, deleteUser, addUser, updateUser } from '../../utils/api';
+import { fetchUsers, deleteUser, updateUser } from '../../utils/api'; // Make sure to add the addUser function
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ email: '', firstname: '', lastname: '', role: '' });
+  const [formData, setFormData] = useState({
+    email: '',
+    firstname: '',
+    lastname: '',
+    role: 'customer',
+    phone: '',
+    address: ''
+  });
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -20,17 +27,14 @@ export default function Users() {
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      await deleteUser(id, token);
+      const success = await deleteUser(id, token);  // Pass id to deleteUser
+      if (!success) {
+        console.error('Failed to delete user');
+        return;
+      }
       setUsers((prev) => prev.filter((user) => user.id !== id));
     }
   };
-
-  const handleAddUserClick = () => {
-    setEditingUser(null); // Clear any existing user data
-    setFormData({ email: '', firstname: '', lastname: '', role: '' });
-    setShowModal(true);
-  };
-
   const handleEditUserClick = (user) => {
     setEditingUser(user); // Set the user being edited
     setFormData({
@@ -38,6 +42,8 @@ export default function Users() {
       firstname: user.firstname,
       lastname: user.lastname,
       role: user.role,
+      phone: user.phone || '',
+      address: user.address || ''
     });
     setShowModal(true);
   };
@@ -48,26 +54,27 @@ export default function Users() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (editingUser) {
       // Update existing user
-      const updatedUser = await updateUser(editingUser.id, formData, token);
+      const updatedUser = await updateUser(editingUser.id, formData, token);  // Pass the correct user ID and form data
+      if (!updatedUser) {
+        console.error('Failed to update user');
+        return;
+      }
       setUsers((prev) => prev.map((user) => (user.id === editingUser.id ? updatedUser : user)));
-    } else {
-      // Add new user
-      const newUser = await addUser(formData, token);
-      setUsers((prev) => [...prev, newUser]);
-    }
-
+      alert("Users updated succesfully !!")
+    } 
+    
     setShowModal(false);
   };
+  
 
   if (loading) return <p>Loading users...</p>;
 
   return (
     <div className="view-users">
       <h2>Manage Users</h2>
-      <button className="btn btn-primary" onClick={handleAddUserClick}>Add User</button>
 
       <table className="table mt-3">
         <thead>
@@ -76,6 +83,8 @@ export default function Users() {
             <th>Email</th>
             <th>First Name</th>
             <th>Last Name</th>
+            <th>Phone</th>
+            <th>Address</th>
             <th>Role</th>
             <th>Actions</th>
           </tr>
@@ -88,6 +97,8 @@ export default function Users() {
                 <td>{user.email}</td>
                 <td>{user.firstname}</td>
                 <td>{user.lastname}</td>
+                <td>{user.phone}</td>
+                <td>{user.address}</td>
                 <td>{user.role}</td>
                 <td>
                   <button className="btn btn-warning me-2" onClick={() => handleEditUserClick(user)}>Update</button>
@@ -97,7 +108,7 @@ export default function Users() {
             ))
           ) : (
             <tr>
-              <td colSpan="6">No users found.</td>
+              <td colSpan="8">No users found.</td>
             </tr>
           )}
         </tbody>
@@ -149,6 +160,25 @@ export default function Users() {
                     />
                   </div>
                   <div className="form-group">
+                    <label>Phone:</label>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Address:</label>
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="form-group">
                     <label>Role:</label>
                     <select
                       name="role"
@@ -157,9 +187,8 @@ export default function Users() {
                       className="form-control"
                       required
                     >
-                      <option value="">Select Role</option>
+                      <option value="customer">Customer</option>
                       <option value="admin">Admin</option>
-                      <option value="user">User</option>
                     </select>
                   </div>
                 </div>

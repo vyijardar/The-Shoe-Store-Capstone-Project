@@ -18,7 +18,6 @@ function HeroSection() {
       setCurrentSlide(prev => (prev + 1) % images.length);
     }, 5000);
 
-    // Clean up on unmount to avoid memory leaks
     return () => clearInterval(interval);
   }, []);
  const navigate = useNavigate();
@@ -29,12 +28,11 @@ function HeroSection() {
         backgroundImage: `url(${images[currentSlide]})`
       }}
     >
-      <div className="overlay" /> {/* Optional overlay for dimming the image */}
+      <div className="overlay" /> 
       <div className="hero-content">
         <h1>Love the Planet we walk on</h1>
         <p>
-          Bibendum fermentum, aenean donec pretium aliquam blandit 
-          tempor imperdiet arcu arcu ut nunc in dictum mauris at ut.
+        Where Classic Meets Contemporary
         </p>
         <div className="hero-buttons">
           <button onClick={()=>{navigate('/men')}}>Shop Men</button>

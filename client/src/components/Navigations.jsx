@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../css/icomoon.css";
 import "../css/ionicons.min.css"; // Correct import path for ionicons.min.css
@@ -12,6 +12,7 @@ import logo from "../assets/logo1.png";
 
 
 export default function Navigations({ token, setToken, setisLoggedIn }) {
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const { totalItems } = useContext(CartContext);
@@ -23,26 +24,13 @@ export default function Navigations({ token, setToken, setisLoggedIn }) {
     setToken(null);
     navigate("/login");
   };
-  // Search form handling (optional)
-  function handleSubmit(event) {
+  const handleSearch = (event) => {
     event.preventDefault();
-    // Implement search submission logic here
-  }
+    if (searchQuery.trim() !== '') {
+        navigate(`/search?q=${encodeURIComponent(searchQuery)}`); // Fix: Ensure proper encoding
+    }
+};
 
-  function handleChange(event) {
-    // Implement search input change logic here (optional)
-  }
-
-  // // useEffect to watch changes in token
-  // useEffect(() => {
-  //   // When the token changes, check if the user is logged in
-  //   if (!token) {
-  //     setisLoggedIn(false); // User is logged out
-  //   } else {
-  //     setisLoggedIn(true); // User is logged in
-  //   }
-  // }, [token, setisLoggedIn]);
-  console.log("Navbar rendered. Total Items:", totalItems);
   return (
     <nav className="colorlib-nav" role="navigation">
       <div className="top-header ">
@@ -66,9 +54,9 @@ export default function Navigations({ token, setToken, setisLoggedIn }) {
             </div>
             {/* Search Section */}
             <div className="col-sm-5 col-md-3">
-              <form action="#" onSubmit={handleSubmit} className="search-wrap">
+              <form onSubmit={handleSearch} className="search-wrap">
                 <div className="form-group">
-                  <input className="form-control search" type="search" placeholder="Search" onChange={handleChange} />
+                  <input className="form-control search" type="search" placeholder="Search"  onChange={(e) => setSearchQuery(e.target.value)} />
                   <button className="btn btn-primary submit-search text-center" type="submit">
                     <FontAwesomeIcon icon={faSearch} />
                   </button>

@@ -10,25 +10,32 @@ import men2 from '../assets/images/item-11.jpg';
 export default function Women() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
-    const [category, setCategory] = useState("Women"); 
+    const [category, setCategory] = useState("Women");
+    const [isLoading, setIsLoading] = useState(true);
     
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const productsPerPage = 6; // Change this number based on your preference
     // Fetch products from API
     useEffect(() => {
         async function fetchProducts() {
             try {
+                setIsLoading(true);
                 const response = await fetch("http://localhost:3001/api/products/women");
                 const result = await response.json();
                 setProducts(result);
                 setFilteredProducts(result);
             } catch (error) {
                 console.error('Error fetching products:', error);
+            } finally {
+                setIsLoading(false);
             }
         }
         fetchProducts();
     }, []);
 
-      // Handle filter changes
-      const handleFilterChange = (filters) => {
+    // Handle filter changes
+    const handleFilterChange = (filters) => {
         if (Object.keys(filters).length === 0) {
             // If filters are empty, reset to all products
             setFilteredProducts(products);
@@ -51,8 +58,10 @@ export default function Women() {
             filtered = filtered.filter((product) => product.name.includes(filters.brand));
         }
         if (filters.size) {
-            filtered = filtered.filter((product) => product.size === filters.size); // Assuming size is a property in the product object
-        }
+            filtered = filtered.filter((product) =>
+              Array.isArray(product.size) ? product.size.includes(filters.size) : product.size === filters.size
+            );
+          }  
         if (filters.colors && filters.colors.length > 0) {
             filtered = filtered.filter((product) => filters.colors.includes(product.color)); // Assuming color is a property in the product object
         }
@@ -95,7 +104,15 @@ export default function Women() {
                         </div>
                         <div className="col-lg-9 col-xl-9">
                             <ProductSort onSortChange={handleSortChange} />
-                            <ProductGrid products={filteredProducts} />
+                            {/* Show loading spinner while products are being fetched */}
+                            {isLoading ? (
+                                <div className="spinner-container">
+                                    <div className="spinner"></div>
+                                    <p>Loading products...</p>
+                                </div>
+                            ) : (
+                                <ProductGrid products={filteredProducts} />
+                            )}
                         </div>
                     </div>
                 </div>

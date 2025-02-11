@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
-import "../../css/Spinner.css";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -47,14 +46,13 @@ export default function Products() {
     try {
       setLoading(true);
       const token = localStorage.getItem("adminToken");
-      console.log("Admin Token Before Sending:", token);
-
+   
       if (!token) {
         console.error("Admin token is missing!");
         return;
       }
 
-      console.log("Product Data Before Sending:", product);
+    
       let response, newProduct;
 
       if (modalType === "Add") {
@@ -66,7 +64,7 @@ export default function Products() {
           },
           body: JSON.stringify(product),
         });
-      
+
       } else if (modalType === "Edit") {
         response = await fetch(`http://localhost:3001/api/products/${currentProduct.id}`, {
           method: "PUT",
@@ -78,19 +76,14 @@ export default function Products() {
         });
 
       }
-
       const rawData = await response.text();
-      console.log("Raw Response:", rawData);
-
+     
       try {
         newProduct = JSON.parse(rawData);
       } catch (error) {
         console.error("Error parsing JSON:", error);
         return;
       }
-
-      console.log("Parsed Product Data:", newProduct);
-
       if (!newProduct || !newProduct.id) {
         console.error("Invalid product data received:", newProduct);
         return;
@@ -101,7 +94,7 @@ export default function Products() {
           ? [...prevProducts, newProduct]
           : prevProducts.map((p) => (p.id === newProduct.id ? newProduct : p))
       );
-    alert("Product saved successfully");
+      alert("Product saved successfully");
     } catch (error) {
       console.error("Error saving product:", error);
     } finally {
@@ -140,51 +133,55 @@ export default function Products() {
       <button className="add-product-btn" onClick={() => openModal("Add")}>
         Add Product
       </button>
-      <table className="table mt-3 product-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Brand</th>
-            <th>Category</th>
-            <th>Gender</th>
-            <th>Size</th>
-            <th>Color</th>
-            <th>Stock</th>
-            <th>Image URL</th>
-            <th>Created at</th>
-            <th>Updated at</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div className=" mt-3 border p-3" style={{ overflowX: "auto" }}>
+      <div className="table-responsive">
+        <div className="d-table w-100 border" style={{ minWidth: "1800px" }}>
+          {/* Table Header */}
+          <div className="d-table-row bg-primary text-white text-center fw-bold">
+            {[
+              "ID",
+              "Name",
+              "Description",
+              "Price",
+              "Brand",
+              "Category",
+              "Gender",
+              "Size",
+              "Color",
+              "Stock",
+              "Image URL",
+              "Created at",
+              "Updated at",
+              "Actions"
+            ].map((header, index) => (
+              <div key={index} className="d-table-cell p-2 border text-wrap" style={{ minWidth: "120px" }}>{header}</div>
+            ))}
+          </div>
+          {/* Table Body */}
           {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.id}</td>
-              <td>{product.name}</td>
-              <td className="scrollable-cell">{product.description}</td>
-              <td>${product.price}</td>
-              <td>{product.brand}</td>
-              <td>{product.category}</td>
-              <td>{product.gender}</td>
-              <td>{product.size?.join(", ") || "No sizes available"}</td>
-              <td>{product.color}</td>
-              <td>{product.stock}</td>
-              <td className="scrollable-cell">
-                {product.image_urls?.join(", ") || "No images available"}
-              </td>
-              <td>{product.created_at}</td>
-              <td>{product.updated_at}</td>
-              <td>
-                <button className="edit-btn" onClick={() => openModal("Edit", product)}>Edit</button>
-                <button className="delete-btn" onClick={() => handleDelete(product.id)}>Delete</button>
-              </td>
-            </tr>
+            <div className="d-table-row border text-center align-items-center" key={product.id}>
+              <div className="d-table-cell p-2 border text-wrap">{product.id}</div>
+              <div className="d-table-cell p-2 border text-wrap">{product.name}</div>
+              <div className="d-table-cell p-2 border text-wrap" style={{ maxWidth: "200px", overflowY: "auto", textOverflow: "ellipsis" }}>{product.description}</div>
+              <div className="d-table-cell p-2 border">${product.price}</div>
+              <div className="d-table-cell p-2 border">{product.brand}</div>
+              <div className="d-table-cell p-2 border">{product.category}</div>
+              <div className="d-table-cell p-2 border">{product.gender}</div>
+              <div className="d-table-cell p-2 border text-wrap">{product.size?.join(", ") || "N/A"}</div>
+              <div className="d-table-cell p-2 border">{product.color}</div>
+              <div className="d-table-cell p-2 border">{product.stock}</div>
+              <div className="d-table-cell p-2 border text-wrap" style={{ maxWidth: "200px", overflowY: "auto", textOverflow: "ellipsis" ,maxHeight:"200px"}}>{product.image_urls?.join(", ") || "N/A"}</div>
+              <div className="d-table-cell p-2 border">{new Date(product.created_at).toLocaleString()}</div>
+              <div className="d-table-cell p-2 border">{new Date(product.updated_at).toLocaleString()}</div>
+              <div className="d-table-cell p-2 border d-flex justify-content-center gap-2">
+                <button className="btn btn-warning btn-sm" onClick={() => openModal("Edit", product)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(product.id)}>Delete</button>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
+    </div>
 
       {isModalOpen && modalType === "Add" && <AddProduct onClose={closeModal} onSave={handleSave} />}
       {isModalOpen && modalType === "Edit" && <EditProduct product={currentProduct} onClose={closeModal} onSave={handleSave} />}

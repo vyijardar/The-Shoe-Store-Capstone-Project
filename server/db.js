@@ -68,7 +68,6 @@ const createUser = async ({ firstname, lastname, email, password, role = 'custom
     const SQL = `INSERT INTO users(id, firstname,lastname, email, password, role, created_at, updated_at) 
                   values($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING *`;
     const response = await client.query(SQL, [uuid.v4(), firstname, lastname, email, await bcrypt.hash(password, 10), role]);
-    console.log('Query result:', response.rows[0]);
     return response.rows[0];
   } catch (error) {
     console.error("Error creating user:", error);
@@ -119,7 +118,7 @@ async function findUserByEmail(email, password) {
   const normalizedEmail = email.trim().toLowerCase();
   const result = await client.query(SQL, [normalizedEmail]);
 
-  console.log("Query result:", result.rows);
+ 
   if (result.rows.length === 0) {
     throw new Error('User not found');
   }
@@ -132,19 +131,12 @@ async function findUserByEmail(email, password) {
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    JWT // Make sure this is defined
-  );
-
-  console.log("Generated token:", token);
-  console.log("Returning user:", user);  // Ensure user info is logged correctly
-
-  return { token, user };  // Ensure both are returned
+    { id: user.id, email: user.email, role: user.role },JWT );
+  return { token, user }; 
 }
 async function adminDetails() {
   const SQL = `SELECT id, email, firstname, lastname, role FROM users`;
   const result = await client.query(SQL);
-  console.log('Query result:', result.rows);
   return result.rows;
 }
 // Utility function to generate a JWT token
@@ -179,24 +171,34 @@ const fetchUsers = async () => {
   }
 
 };
-const updateUser = async ({ userId, phone, address }) => {
+const updateUser = async ({ userId,email, phone, address,role }) => {
   try {
-    // SQL query to update the user's phone and address during checkout
     const SQL = `UPDATE users 
-                   SET phone = $1, address = $2, updated_at = NOW() 
-                   WHERE id = $3 RETURNING *`;
+    SET email = $1, phone = $2, address = $3, role = $4, updated_at = NOW() 
+    WHERE id = $5 
+    RETURNING *`;
 
-    // Execute the query
-    const response = await client.query(SQL, [phone, address, userId]);
-
-    // Return the updated user data
+    const response = await client.query(SQL, [email, phone, address, role, userId]);
     return response.rows[0];
   } catch (error) {
-    console.error("Error updating user during checkout:", error);
-    throw new Error('Failed to update user during checkout');
+    console.error("Error updating user:", error);
+    throw new Error('Failed to update user');
   }
 };
+const deleteUser = async (id) => {
+  try {
+    const SQL = `DELETE FROM users WHERE id = $1 RETURNING *`;
+    const response = await client.query(SQL, [id]);
 
+    if (response.rows.length === 0) {
+      throw new Error('User not found');
+    }
+    return response.rows[0]; 
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw new Error('Failed to delete user');
+  }
+};
 async function getAdminByEmail(email) {
   try {
     // Define the query to get the user with the provided email and role 'admin'
@@ -263,7 +265,7 @@ const updateProduct = async (id,productData) => {
 }
 const deleteProduct = async ({ id }) => {
   try {
-    const result = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
+    const result = await client.query('SELECT * FROM products WHERE id = $1', [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -276,6 +278,7 @@ const deleteProduct = async ({ id }) => {
   }
 
 };
+
 module.exports = {
   client,
   createTables,
@@ -287,6 +290,7 @@ module.exports = {
   deleteProduct,
   updateProduct,
   updateUser,
+  deleteUser,
   getAdminByEmail,
   findUserByEmail,
   findUserById,

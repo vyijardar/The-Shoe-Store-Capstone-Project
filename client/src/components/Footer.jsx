@@ -3,6 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTwitter, faFacebook, faLinkedin, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { Link } from 'react-router-dom';
 export default function Footer() {
+    const socialLinks = [
+        { id: 1, href: "https://twitter.com", icon: faTwitter },
+        { id: 2, href: "https://facebook.com", icon: faFacebook },
+        { id: 3, href: "https://linkedin.com", icon: faLinkedin },
+        { id: 4, href: "https://instagram.com", icon: faInstagram },
+    ];
+      
     return (
         <footer id="colorlib-footer" role="contentinfo">
             <div className="container">
@@ -14,27 +21,14 @@ export default function Footer() {
                             Even the all-powerful Pointing has no control about the blind
                             texts. It is an almost unorthographic life.
                         </p>
-                        <ul className="colorlib-social-icons">
-                            <li>
-                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                                    <FontAwesomeIcon icon={faTwitter} />
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                                    <FontAwesomeIcon icon={faFacebook} />
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-                                    <FontAwesomeIcon icon={faLinkedin} />
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                                    <FontAwesomeIcon icon={faInstagram} />
-                                </a>
-                            </li>
+                        <ul className="colorlib-social-icons d-flex list-unstyled">
+                            {socialLinks.map(({ id, href, icon }) => (
+                                <li key={id} className="me-3">
+                                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-dark fs-4">
+                                        <FontAwesomeIcon icon={icon} />
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
@@ -44,7 +38,7 @@ export default function Footer() {
                         <ul className="colorlib-footer-links">
                             <li> <a href="#">Shop Men</a> </li>
                             <li> <a href="#">Shop Women</a></li>
-                    
+
                         </ul>
                     </div>
 
@@ -74,13 +68,20 @@ export default function Footer() {
                     <div className="col footer-col">
                         <h4>Contact Information</h4>
                         <ul className="colorlib-footer-links">
-                            <li>
+                            <li> <Link to="/contact">
                                 291 South 21th Street, <br />
-                                Suite 721 New York NY 10016
+                                Suite 721,New York, NY 10016
+                            </Link>
                             </li>
-                            <li><a href="tel://1234567920">+ 1235 2355 98</a></li>
-                            <li><a href="mailto:info@yoursite.com">info@yoursite.com</a> </li>
-                            <li><a href="#">yoursite.com</a></li>
+                            <li>
+                                <Link to="/contact">+1 235-2355-98</Link>
+                            </li>
+                            <li>
+                                <Link to="/contact">info@theshoestore.com</Link>
+                            </li>
+                            <li>
+                                <Link to="/">www.theshoestore.com</Link>
+                            </li>
                         </ul>
                     </div>
                 </div>

@@ -26,6 +26,7 @@ import FAQs from "./pages/FAQs";
 import ShippingAndReturns from "./pages/ShippingAndReturns";
 import SizeChart from "./pages/SizeChart";
 import Dashboard from "./pages/admin/Dashboard";
+import SearchResults from "./components/SearchResults";
 
 function App() {
   const [cartItems, setCartItems] = useState(0);
@@ -93,6 +94,7 @@ function Content({ cartItems, token, setToken, setisLoggedIn ,setCartItems}) {
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/shipping-returns" element={<ShippingAndReturns />} />
         <Route path="/size-chart" element={<SizeChart />} />
+        <Route path="/search" element={<SearchResults />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}

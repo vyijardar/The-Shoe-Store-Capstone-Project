@@ -55,8 +55,7 @@ export default function Login({ setToken, setisLoggedIn }) {
             if (result.token) {
                 setToken(result.token);
                 localStorage.setItem("token", result.token);
-             
-                console.log("Token being sent to client:", result.token);
+        
                 // Ensure result.user exists before accessing
                 if (result.user) {
                     localStorage.setItem("role", result.user.role);

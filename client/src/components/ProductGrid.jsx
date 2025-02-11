@@ -9,7 +9,7 @@ export default function ProductGrid({ products }) {
 
     const handleAddToCart = (product) => {
         addToCart({ ...product, quantity: 1 });
-        console.log("Updated Cart Items:", cartItems); // Debugging log
+        alert("Shoes Successfully Added to cart.");
     };
 
 

@@ -38,13 +38,13 @@ export default function DashboardLayout({setToken,setisLoggedIn}) {
             <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? "active" : "")}>
               Orders
             </NavLink>
-            <button onClick={handleLogout}>Logout</button>
+            <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
           </>
         )}
       </aside>
 
       {/* Main Content */}
-      <main className="content" style={{ flex: 1 }}>
+      <main className="content">
         <Outlet />
       </main>
     </div>
