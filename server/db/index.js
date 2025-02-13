@@ -31,10 +31,10 @@ app.use(require('morgan')('dev'))
 
 //for deployment only
 const path = require('path');
-app.use(express.static(path.join(__dirname,'..', 'client', 'dist')));
+app.use(express.static(path.join(__dirname,'../..', 'client', 'dist')));
 // app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')));
-app.get("*", (req, res) => { res.sendFile(path.resolve(__dirname,'..', "client", "dist", "index.html")); });
-app.use('/assets', express.static(path.join(__dirname, '../client/dist/assets')));
+app.get("*", (req, res) => {  res.sendFile(path.join(__dirname, '../../client/dist/index.html')) });
+app.use('/assets', express.static(path.join(__dirname, '../../client/dist/assets')));
 
 //Admin Dashboard
 app.get('/api/admin/dashboard', isLoggedIn, checkAdmin, async (req, res) => {
