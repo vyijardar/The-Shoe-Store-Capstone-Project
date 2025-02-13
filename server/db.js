@@ -12,6 +12,8 @@ const createTables = async () => {
     DROP TABLE IF EXISTS orders CASCADE;
     DROP TABLE IF EXISTS order_items CASCADE;
     DROP TABLE IF EXISTS products CASCADE;
+    DROP TYPE IF EXISTS user_role;
+    CREATE TYPE user_role AS ENUM ('admin', 'customer');
     CREATE TABLE users (
     id UUID PRIMARY KEY,
     firstname VARCHAR(255) NOT NULL,
@@ -23,7 +25,7 @@ const createTables = async () => {
     role user_role DEFAULT 'customer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-
+    
     CREATE TABLE products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
