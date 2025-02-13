@@ -117,55 +117,6 @@ export default function Women() {
                     </div>
                 </div>
             </div>
-
-            <div className="colorlib-featured">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-sm-4 text-center">
-                            <div className="featured">
-                                <div
-                                    className="featured-img featured-img-2"
-                                    style={{ backgroundImage: `url(${men})` }}>
-                                    <h2>Dress</h2>
-                                    <p>
-                                        <a href="#" className="btn btn-primary btn-lg">
-                                            Shop now
-                                        </a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-4 text-center">
-                            <div className="featured">
-                                <div
-                                    className="featured-img featured-img-2"
-                                    style={{ backgroundImage: `url(${men1})` }}>
-                                    <h2>Casuals</h2>
-                                    <p>
-                                        <a href="#" className="btn btn-primary btn-lg">
-                                            Shop now
-                                        </a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-4 text-center">
-                            <div className="featured">
-                                <div
-                                    className="featured-img featured-img-2"
-                                    style={{ backgroundImage: `url(${men2})` }}>
-                                    <h2>Sports</h2>
-                                    <p>
-                                        <a href="#" className="btn btn-primary btn-lg">
-                                            Shop now
-                                        </a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </>
     );
 }
