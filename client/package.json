@@ -3,15 +3,29 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "lint": "eslint",
+  "preview": "vite preview",
+  "start": "vite"
+},
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "jquery": "^3.7.1",
+    "owl.carousel": "^2.3.4",
     "react": "^18.3.1",
+    "react-bootstrap": "^2.10.8",
     "react-dom": "^18.3.1",
+    "react-owl-carousel": "^2.3.3",
     "react-router-dom": "^6.28.1"
   },
   "devDependencies": {

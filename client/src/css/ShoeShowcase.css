@@ -1,0 +1,27 @@
+/* src/components/ShoeShowcase.css */
+
+.shoe-showcase {
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .showcase-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+  
+  .shoe-image {
+    width: 300px;
+    height: 250px;
+    background-color: #ddd;
+    margin-right: 2rem;
+  }
+  
+  .shoe-points {
+    list-style: none;
+    text-align: left;
+    padding: 0;
+  }
+  

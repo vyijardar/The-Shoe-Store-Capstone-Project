@@ -1,0 +1,77 @@
+/* src/components/MaterialSection.css */
+.material-section {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f9f9f9; /* Light background for contrast */
+}
+
+.logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem; /* Space between logos */
+  margin-bottom: 2rem;
+}
+
+.logo {
+  width: 120px; /* Adjust logo size */
+  height: auto;
+  opacity: 0.8; /* Slightly transparent */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.logo:hover {
+  opacity: 1;
+  transform: scale(1.1); /* Slight zoom on hover */
+}
+
+.material-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem; /* Space between image and text */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.material-image img {
+  width: 400px; /* Image width */
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.material-text {
+  max-width: 500px;
+  text-align: left;
+}
+
+.material-text h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.material-text h3 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.material-text p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.read-more {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.read-more:hover {
+  text-decoration: underline;
+}
