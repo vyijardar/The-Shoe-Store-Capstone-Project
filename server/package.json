@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node db/index.js",
-    "start:dev": "nodemon db/index.js"
-  },
+  "start": "node db/index.js",
+  "start:dev": "nodemon db/index.js",
+  "build": "cd ../client && npm install && npm run build",
+  "postinstall": "npm run build"
+}
+,
   "keywords": [],
   "author": "",
   "license": "ISC",
