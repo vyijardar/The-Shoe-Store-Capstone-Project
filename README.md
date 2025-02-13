@@ -1,74 +1,85 @@
-<<<<<<< HEAD
-# Getting Started with Create React App
+# Shoe Store E-Commerce Website
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# About 
+![image](https://github.com/user-attachments/assets/2cfe5a6f-01b6-4399-8ee7-d6489a740819)
 
-## Available Scripts
+Welcome to Our Shoe Store!
 
-In the project directory, you can run:
+We are excited to present our online Shoe Store, a one-stop destination for all your footwear needs. Whether you're looking for the latest trendy sneakers, classic dress shoes, or comfortable running shoes, we’ve got you covered. Our user-friendly e-commerce platform allows you to easily browse through a wide range of shoes, find your perfect fit, and make secure purchases from the comfort of your home.
 
-### `npm start`
+Our website is built with the latest web technologies to ensure a seamless shopping experience, whether you're on desktop, tablet, or mobile. With features like product search, filtering by brand, size, and category, as well as an intuitive shopping cart and checkout process, shopping with us is easy and enjoyable.
+### This is a fully functional e-commerce website for a shoe store built using the PERN stack (PostgreSQL, Express.js, React, Node.js). This website serves as my capstone project, designed to showcase my skills in full-stack development.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Features:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. User Authentication & Authorization: Users can sign up, log in, and manage their profiles.
 
-### `npm test`
+2. Product Catalog: Display various shoes with images, descriptions, and prices.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. Admin Dashboard: Admins can manage products, users, and view sales data.
 
-### `npm run build`
+4. Search Functionality: Users can search for shoes based on various filters (brand, size, category).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+5. Cart & Checkout: Users can add items to their cart and proceed with checkout using a simulated payment system.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+6. Responsive Design: The website is fully responsive, ensuring a great experience on desktop, tablet, and mobile devices.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Technologies Used:
 
-### `npm run eject`
+1. Frontend: React, Redux (for state management), CSS3, HTML5
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+2. Backend: Node.js, Express.js
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. Database: PostgreSQL
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. Authentication: JWT (JSON Web Token) for secure user authentication
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+5. Deployment: Deployed on Render.
 
-## Learn More
+## Getting Started:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Clone the repository: 
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    git clone https:git@github.com:Kalayil/Capstone-Project.git
+   
+2. Install dependencies for both frontend and backend:
+  ```
+  cd client
+  npm install
+  ```
+  ```
+  cd server
+  npm install
+  ```
 
-### Code Splitting
+3. Run the app locally:
+   
+  To run frontend:
+  ```
+  cd client
+  npm run dev
+  ```
+  To run backend:
+  ```
+  cd server   
+  npm start
+  ```
+## Future Improvements:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Future Improvements
 
-### Analyzing the Bundle Size
+As we continue to enhance the shopping experience on our website, we have several exciting features and improvements planned for the future:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1.Payment Gateway Integration
 
-### Making a Progressive Web App
+2.Order Tracking
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+3.Advanced Product Filtering
 
-### Advanced Configuration
+4.User Reviews and Ratings
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+5.Wishlist Feature
 
-### Deployment
+6.Promotions and Discounts
+  
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# Capstone-Project
->>>>>>> f2e10715ea4513afcfd7fd385dc6c23b62a41182
