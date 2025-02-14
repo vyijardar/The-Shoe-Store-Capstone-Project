@@ -3,7 +3,7 @@ import Breadcrumbs from '../components/BreadCrumbs';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
 import ProductSort from '../components/ProductSort';
-const api = import.meta.env.API_URL || "http://localhost:3001";
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 export default function Women() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);

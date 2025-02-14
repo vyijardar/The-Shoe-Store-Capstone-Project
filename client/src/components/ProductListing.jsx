@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import '../css/ProductListing.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-const api = import.meta.env.API_URL || "http://localhost:3001";
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 function ProductListing() {
   // Access context values
   const { cartItems, addToCart } = useContext(CartContext);

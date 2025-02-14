@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-const api = import.meta.env.API_URL || "http://localhost:3001";
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export default function ProductFilter({ onFilterChange }) {
   const [products, setProducts] = useState([]);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
-const api = import.meta.env.API_URL || "http://localhost:3001";
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

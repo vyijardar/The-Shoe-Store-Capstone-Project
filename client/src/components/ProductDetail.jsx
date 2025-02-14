@@ -5,7 +5,7 @@ import { CartContext } from '../context/CartContext';
 import { Carousel } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faMinus, faPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-const api = import.meta.env.API_URL || "http://localhost:3001";
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 export default function ProductDetail() {
     const { id } = useParams();

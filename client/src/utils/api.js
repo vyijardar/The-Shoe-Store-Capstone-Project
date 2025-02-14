@@ -1,7 +1,7 @@
 // api.js
 
 // Placeholder base URL (replace with the actual URL of your backend once ready)
-const API_BASE_URL = import.meta.env.API_URL || "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 
 // Function to fetch all users
