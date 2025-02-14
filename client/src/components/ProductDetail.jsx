@@ -5,6 +5,7 @@ import { CartContext } from '../context/CartContext';
 import { Carousel } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight, faMinus, faPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+const api = import.meta.env.API_URL || "http://localhost:3001";
 
 export default function ProductDetail() {
     const { id } = useParams();
@@ -49,7 +50,7 @@ export default function ProductDetail() {
     useEffect(() => {
         async function fetchProduct() {
             try {
-                const response = await fetch(`http://localhost:3001/api/products/${id}`);
+                const response = await fetch(`${api}/api/products/${id}`);
                 const result = await response.json();
                 setProduct(result);
                 if (result.size) {

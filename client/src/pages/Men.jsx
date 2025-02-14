@@ -3,9 +3,7 @@ import Breadcrumbs from "../components/BreadCrumbs";
 import ProductFilter from "../components/ProductFilter";
 import ProductGrid from "../components/ProductGrid";
 import ProductSort from "../components/ProductSort";
-import men from "../assets/images/men.jpg";
-import men1 from "../assets/images/item-9.jpg";
-import men2 from "../assets/images/item-11.jpg";
+const api = import.meta.env.API_URL || "http://localhost:3001";
 
 export default function Men() {
   const [products, setProducts] = useState([]);
@@ -22,7 +20,7 @@ export default function Men() {
     async function fetchProducts() {
       try {
         setIsLoading(true);
-        const response = await fetch("http://localhost:3001/api/products/men");
+        const response = await fetch(`${api}/api/products/men`);
         const result = await response.json();
 
         if (!Array.isArray(result)) {

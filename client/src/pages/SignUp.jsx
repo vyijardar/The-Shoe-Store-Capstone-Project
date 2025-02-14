@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const api = import.meta.env.API_URL || "http://localhost:3001";
 
 export default function Register({ setToken }) {
     const [firstname, setFirstname] = useState("");
@@ -46,7 +47,7 @@ export default function Register({ setToken }) {
         setError({});
 
         try {
-            const response = await fetch("http://localhost:3001/api/users", {
+            const response = await fetch(`${api}/api/users`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',

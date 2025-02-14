@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import '../css/ProductListing.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {  faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+const api = import.meta.env.API_URL || "http://localhost:3001";
 function ProductListing() {
   // Access context values
   const { cartItems, addToCart } = useContext(CartContext);
@@ -13,7 +14,7 @@ function ProductListing() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch("http://localhost:3001/api/products");
+        const response = await fetch(`${api}/api/products`);
         const result = await response.json();
         if (!Array.isArray(result)) {
           throw new Error("Invalid response format: Expected an array");

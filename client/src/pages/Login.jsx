@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const api = import.meta.env.API_URL || "http://localhost:3001";
 
 export default function Login({ setToken, setisLoggedIn }) {
     const [email, setEmail] = useState("");
@@ -36,7 +37,7 @@ export default function Login({ setToken, setisLoggedIn }) {
         setError({});
 
         try {
-            const response = await fetch("http://localhost:3001/api/auth/login", {
+            const response = await fetch(`${api}/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

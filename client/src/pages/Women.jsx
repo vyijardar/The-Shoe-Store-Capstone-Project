@@ -3,10 +3,7 @@ import Breadcrumbs from '../components/BreadCrumbs';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
 import ProductSort from '../components/ProductSort';
-import men from '../assets/images/men.jpg';
-import men1 from '../assets/images/item-9.jpg';
-import men2 from '../assets/images/item-11.jpg';
-
+const api = import.meta.env.API_URL || "http://localhost:3001";
 export default function Women() {
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
@@ -21,7 +18,7 @@ export default function Women() {
         async function fetchProducts() {
             try {
                 setIsLoading(true);
-                const response = await fetch("http://localhost:3001/api/products/women");
+                const response = await fetch(`${api}/api/products/women`);
                 const result = await response.json();
                 setProducts(result);
                 setFilteredProducts(result);

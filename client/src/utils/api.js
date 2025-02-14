@@ -1,12 +1,13 @@
 // api.js
 
 // Placeholder base URL (replace with the actual URL of your backend once ready)
-const API_BASE_URL = "http://localhost:3001/api"; 
+const API_BASE_URL = import.meta.env.API_URL || "http://localhost:3001";
+
 
 // Function to fetch all users
 export const fetchUsers = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +27,7 @@ export const fetchUsers = async (token) => {
 // Function to update user information
 export const updateUser = async (id, userData, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -47,7 +48,7 @@ export const updateUser = async (id, userData, token) => {
 // Function to delete a user
 export const deleteUser = async (id, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -66,7 +67,7 @@ export const deleteUser = async (id, token) => {
 // Function to add a new product
 export const addProduct = async (product, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/addproduct`, {
+    const response = await fetch(`${API_BASE_URL}/api/products/addproduct`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +93,7 @@ export const addProduct = async (product, token) => {
 // Function to edit an existing product
 export const editProduct = async (id, product, token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +123,7 @@ export const editProduct = async (id, product, token) => {
 
 export const fetchProductsBySearch = async (query) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE_URL}/api/products/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
           throw new Error('Failed to fetch search results');
       }

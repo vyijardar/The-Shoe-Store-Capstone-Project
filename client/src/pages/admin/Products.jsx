@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
-
+const api = import.meta.env.API_URL || "http://localhost:3001";
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ export default function Products() {
     async function fetchProducts() {
       try {
         const token = localStorage.getItem("adminToken");
-        const response = await fetch("http://localhost:3001/api/products", {
+        const response = await fetch(`${api}/api/products`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -56,7 +56,8 @@ export default function Products() {
       let response, newProduct;
 
       if (modalType === "Add") {
-        response = await fetch("http://localhost:3001/api/products/addproduct", {
+        response = await fetch(`
+          ${api}/api/products/addproduct`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -66,7 +67,8 @@ export default function Products() {
         });
 
       } else if (modalType === "Edit") {
-        response = await fetch(`http://localhost:3001/api/products/${currentProduct.id}`, {
+        response = await fetch(`
+          ${api}/api/products/${currentProduct.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -107,7 +109,7 @@ export default function Products() {
     try {
       setLoading(true);
       const token = localStorage.getItem("adminToken");
-      await fetch(`http://localhost:3001/api/products/${productId}`, {
+      await fetch(`${api}/api/products/${productId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

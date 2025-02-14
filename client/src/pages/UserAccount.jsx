@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+const api = import.meta.env.API_URL || "http://localhost:3001";
 export default function UserAccount({ token }) {
     const [accountInfo, setAccountInfo] = useState(null);
     const [orders, setOrders] = useState([]);
@@ -10,7 +10,7 @@ export default function UserAccount({ token }) {
     const fetchAccountInfo = async () => {
         try {
         
-            const response = await fetch("http://localhost:3001/api/auth/me", {
+            const response = await fetch(`${api}/api/auth/me`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,  // Ensure the token is being sent correctly
