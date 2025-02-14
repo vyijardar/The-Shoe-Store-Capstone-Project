@@ -1,8 +1,8 @@
 # Shoe Store E-Commerce Website
 
-# About 
-![image](https://github.com/user-attachments/assets/2cfe5a6f-01b6-4399-8ee7-d6489a740819)
 
+![image](https://github.com/user-attachments/assets/2cfe5a6f-01b6-4399-8ee7-d6489a740819)
+# About 
 Welcome to Our Shoe Store!
 
 We are excited to present our online Shoe Store, a one-stop destination for all your footwear needs. Whether you're looking for the latest trendy sneakers, classic dress shoes, or comfortable running shoes, we’ve got you covered. Our user-friendly e-commerce platform allows you to easily browse through a wide range of shoes, find your perfect fit, and make secure purchases from the comfort of your home.
