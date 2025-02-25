@@ -1,10 +1,10 @@
 import React from 'react';
 import './Cartpage.css';
 
-function CartItem({ item, updateQuantity, remove }) {
+function CartItems ({ item, updateQuantity, remove }) {
   return (
     <div className="cart-item">
-      <img src={item.image_urls[0]} alt={item.name} className="item-image" />
+      <img src={item.image_urls} alt={item.name} className="item-image" />
       <div className="item-details">
         <h4>{item.name}</h4>
         <p>Price: ${item.price}</p>
@@ -20,4 +20,4 @@ function CartItem({ item, updateQuantity, remove }) {
   );
 }
 
-export default CartItem;
+export default CartItems;

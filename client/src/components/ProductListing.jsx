@@ -53,12 +53,12 @@ function ProductListing() {
                       <div className="desc">
                         <h2> <Link to={`/products/${product.id}`}>{product.name}</Link></h2>
                         <span className="price">${product.price}</span>
-                        <button onClick={
+                        {/* <button onClick={
                           () =>{ addToCart({ ...product, quantity: 1 });
                           alert("Product added to cart succesfully !!");
                           }} className="btn btn-primary btn-addtocart">
                         <FontAwesomeIcon icon={faShoppingCart} />  Add to Cart
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </div>

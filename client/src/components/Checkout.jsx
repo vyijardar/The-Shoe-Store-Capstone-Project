@@ -2,30 +2,30 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // import { CartContext } from "../context/CartContext";
 import "../css/Checkout.css";
-
+const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
 const UserContext = React.createContext({
   isLoggedIn: false,
-  savedAddress: {
-    name: 'John Doe',
-    street: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    postalCode: '10001',
-    country: 'USA',
-  },
-  savedPaymentMethod: {
-    cardNumber: '1111-2222-3333-4444',
+  user: {
+    id: "", // When logged in, this should be set to the user's UUID.
+    savedAddress: {
+      name: 'John Doe',
+      street: '123 Main St',
+      city: 'New York',
+      state: 'NY',
+      postalCode: '10001',
+      country: 'USA',
+    },
+    savedPaymentMethod: {
+      cardNumber: '1111-2222-3333-4444',
+    },
   },
 });
 
 const CartContext = React.createContext({
-  cartItems: [
-    { id: 1, name: 'T-Shirt', price: 19.99, quantity: 2, imageUrl: 'shirt.jpg' },
-    { id: 2, name: 'Jeans', price: 49.99, quantity: 1, imageUrl: 'jeans.jpg' },
-  ],
-  total: 89.97,
+  cartItems: [],
+  total: 0,
+  setCartItems: () => { },
 });
-
 export default function Checkout() {
   const [step, setStep] = useState(1);
 
@@ -57,11 +57,11 @@ export default function Checkout() {
   // For guest checkout: optional account creation
   const [createAccount, setCreateAccount] = useState(false);
 
-  const { isLoggedIn, savedAddress, savedPaymentMethod } = useContext(UserContext);
-  const { cartItems, total } = useContext(CartContext);
+  const { isLoggedIn, user, savedAddress, savedPaymentMethod } = useContext(UserContext);
+  const { cartItems, total, setCartItems } = useContext(CartContext);
   const navigate = useNavigate();
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && user.id) {
       setShippingData((prev) => ({
         ...prev,
         ...savedAddress,
@@ -71,10 +71,19 @@ export default function Checkout() {
         ...prev,
         ...savedAddress,
       }));
-      setCardNumber(savedPaymentMethod.cardNumber || '');
+      setCardNumber(user.savedPaymentMethod.cardNumber || '');
+      // Fetch cart items for the user.
+      fetch(`${api}/api/cart?user_id=${user.id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch cart items");
+          return res.json();
+        })
+        .then((data) => setCartItems(data))
+        .catch((error) =>
+          console.error("Error fetching cart items:", error)
+        );
     }
-    // eslint-disable-next-line
-  }, [isLoggedIn]);
+  }, [isLoggedIn, user, setCartItems]);
 
   // Shipping cost & tax logic
   const shippingCost =
@@ -96,15 +105,115 @@ export default function Checkout() {
   };
 
   // Handle order completion
-  const handleOrderComplete = () => {
+  const handleOrderComplete = async () => {
     if (!isLoggedIn && createAccount) {
       console.log('Creating user account:', shippingData);
-      // ... call your signup API, etc.
+      try {
+        const response = await fetch(`${api}/api/users`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            firstname,
+            lastname,
+            email,
+            password,
+          }),
+        });
+        const result = await response.json();
+        if (response.ok) {
+          if (result.token) {
+            alert("Registered Successfully");
+            navigate('/login'); // Redirect to login after registration             
+          } else {
+            setError({ global: "Failed to sign up, no token received" });
+          }
+        } else {
+          setError({ global: "An error occurred during signup" });
+        }
+      } catch (error) {
+        setError({ global: error.message });
+      }
+    }
+    const orderPayload = {
+      user_id: user.id,
+      cart_items: cartItems.map((item) => ({
+        product_id: item.id,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      total_price: total + shippingCost + tax,
+      billing_address: billingData,
+      shipping_address: shippingData,
+    };
+
+    // Create order.
+    const orderResponse = await fetch(`${api}/api/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderPayload),
+    });
+    if (!orderResponse.ok) throw new Error("Order creation failed");
+    const orderData = await orderResponse.json();
+    console.log("Order created:", orderData);
+
+    // Simulate payment.
+    const paymentPayload = {
+      user_id: user.id,
+      order_id: orderData.orderId, // Ensure your backend returns an orderId field.
+      amount: orderPayload.total_price,
+      payment_method: "credit_card", // Or derive from user input.
+    };
+    const paymentResponse = await fetch(`${api}/api/payments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(paymentPayload),
+    });
+    if (!paymentResponse.ok) throw new Error("Payment failed");
+    const paymentData = await paymentResponse.json();
+    console.log("Payment processed:", paymentData);
+
+    // Clear the cart (if applicable).
+    setCartItems([]);
+    nextStep();
+  };
+ 
+  const submitShippingForm = async (e) => {
+    e.preventDefault();
+    
+    // For this example, we assume that if the user chooses to use the same address,
+    // the billing address is the same as the shipping address.
+    const billingAddress = shippingData; 
+  
+    try {
+      const response = await fetch(`${api}/api/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,                 // from your UserContext
+          cart_items: cartItems,            // from your CartContext
+          total_price: total,               // total price (you can adjust to include shipping/tax if needed)
+          billing_address: billingAddress,  // using shippingData as billing address here
+          shipping_address: shippingData,   // shipping details from the form
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Checkout failed");
+      }
+  
+      const data = await response.json();
+      console.log("Checkout successful:", data);
+      // Optionally, you could save the order ID returned in data.orderId
+      // and then move to the next step (e.g. review or confirmation).
+      nextStep();
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      alert("Checkout failed: " + error.message);
     }
     nextStep();
   };
-
-  // Progress bar
   // Progress bar
   const renderProgress = () => {
     const stepsArray = ['Cart', 'Shipping', 'Payment', 'Review', 'Confirmation'];
@@ -134,12 +243,7 @@ export default function Checkout() {
   const renderShippingForm = () => (
     <div className="checkout-step checkout-form">
       <h2 className="checkout-section-title">Shipping Address</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          nextStep();
-        }}
-      >
+      <form onSubmit={submitShippingForm} >
         <label>
           Name:
           <input

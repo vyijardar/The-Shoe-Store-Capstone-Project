@@ -245,30 +245,42 @@ app.post('/api/users/logout', async (req, res, next) => {
 //Register user
 app.post('/api/users', async (req, res, next) => {
     try {
-        const { firstname, lastname, email, password, role } = req.body;
+        const { 
+            firstname, lastname, email, password, role, 
+            phone, street, city, state, country, zip_code, billing_address, shipping_address 
+        } = req.body;
 
-        // Basic validation to ensure name, email, and password are present
+        // Basic validation to ensure required fields are present
         if (!firstname || !lastname || !email || !password) {
             return res.status(400).json({ error: 'Name, email, and password are required.' });
         }
 
-        // You can add more validation for email format and password length here
+        // Validate email format
         const emailRegex = /\S+@\S+\.\S+/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Please enter a valid email address.' });
         }
 
+        // Validate password length
         if (password.length < 6) {
             return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
         }
 
-        // Create the user (you can replace this with your own user creation logic)
+        // Create the user (using the updated createUser function)
         const user = await createUser({
             firstname,
             lastname,
             email,
             password,
             role: role || 'customer',
+            phone,
+            street,
+            city,
+            state,
+            country,
+            zip_code,
+            billing_address,
+            shipping_address
         });
 
         // Generate a JWT token for the created user
@@ -277,6 +289,7 @@ app.post('/api/users', async (req, res, next) => {
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
+
         res.status(201).json({
             message: 'User created successfully',
             user: {
@@ -284,7 +297,15 @@ app.post('/api/users', async (req, res, next) => {
                 firstname: user.firstname,
                 lastname: user.lastname,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                phone: user.phone, // Include phone and address information if needed
+                street: user.street,
+                city: user.city,
+                state: user.state,
+                country: user.country,
+                zip_code: user.zip_code,
+                billing_address: user.billing_address,
+                shipping_address: user.shipping_address
             },
             token
         });
@@ -293,6 +314,7 @@ app.post('/api/users', async (req, res, next) => {
         next(ex);
     }
 });
+
 
 //Fetch products
 app.get('/api/products', async (req, res, next) => {
@@ -475,39 +497,142 @@ app.get('/api/orders', checkAdmin, async (req, res) => {
 });
 
 //Update user details at checkout
-app.post('/api/checkout', async (req, res, next) => {
+// app.post('/api/checkout', async (req, res, next) => {
+//     try {
+//         const { userId, phone, address } = req.body;
+
+//         // Basic validation to ensure phone and address are provided
+//         if (!phone || !address) {
+//             return res.status(400).json({ error: 'Phone and address are required.' });
+//         }
+
+//         // Update the user with phone and address during checkout
+//         const updatedUser = await updateUser({
+//             userId,
+//             phone,
+//             address
+//         });
+
+//         res.status(200).json({
+//             message: 'Checkout successful',
+//             user: {
+//                 id: updatedUser.id,
+//                 firstname: updatedUser.firstname,
+//                 lastname: updatedUser.lastname,
+//                 email: updatedUser.email,
+//                 phone: updatedUser.phone,
+//                 address: updatedUser.address,
+//                 role: updatedUser.role
+//             }
+//         });
+//     } catch (ex) {
+//         console.error(ex);
+//         next(ex);  // Pass the error to the error handler
+//     }
+// });
+
+// Create an order
+app.post("/api/checkout", async (req, res) => {
+    const { user_id, cart_items, total_price, billing_address, shipping_address } = req.body;
+
     try {
-        const { userId, phone, address } = req.body;
+        // First, insert/update billing and shipping addresses in the 'addresses' table
+        const billingAddressResult = await client.query(
+            `INSERT INTO addresses (street, city, state, country, zip_code, user_id, type)
+             VALUES ($1, $2, $3, $4, $5, $6, 'billing')
+             RETURNING id`,
+            [
+                billing_address.street,
+                billing_address.city,
+                billing_address.state,
+                billing_address.country,
+                billing_address.zip_code,
+                user_id
+            ]
+        );
+        const billingAddressId = billingAddressResult.rows[0].id;
 
-        // Basic validation to ensure phone and address are provided
-        if (!phone || !address) {
-            return res.status(400).json({ error: 'Phone and address are required.' });
-        }
+        const shippingAddressResult = await client.query(
+            `INSERT INTO addresses (street, city, state, country, zip_code, user_id, type)
+             VALUES ($1, $2, $3, $4, $5, $6, 'shipping')
+             RETURNING id`,
+            [
+                shipping_address.street,
+                shipping_address.city,
+                shipping_address.state,
+                shipping_address.country,
+                shipping_address.zip_code,
+                user_id
+            ]
+        );
+        const shippingAddressId = shippingAddressResult.rows[0].id;
 
-        // Update the user with phone and address during checkout
-        const updatedUser = await updateUser({
-            userId,
-            phone,
-            address
-        });
+        // Update billing and shipping address in the 'users' table
+        await client.query(
+            `UPDATE users 
+             SET street = $1, city = $2, state = $3, country = $4, zip_code = $5, 
+                 billing_address = $6, shipping_address = $7
+             WHERE id = $8`,
+            [
+                billing_address.street,
+                billing_address.city,
+                billing_address.state,
+                billing_address.country,
+                billing_address.zip_code,
+                JSON.stringify(billing_address), // Store as full formatted JSON
+                JSON.stringify(shipping_address), // Store as full formatted JSON
+                user_id
+            ]
+        );
 
-        res.status(200).json({
-            message: 'Checkout successful',
-            user: {
-                id: updatedUser.id,
-                firstname: updatedUser.firstname,
-                lastname: updatedUser.lastname,
-                email: updatedUser.email,
-                phone: updatedUser.phone,
-                address: updatedUser.address,
-                role: updatedUser.role
-            }
-        });
-    } catch (ex) {
-        console.error(ex);
-        next(ex);  // Pass the error to the error handler
+        // Insert the order record
+        const orderResult = await client.query(
+            `INSERT INTO orders (user_id, total_price, billing_address_id, shipping_address_id) 
+             VALUES ($1, $2, $3, $4) RETURNING id`,
+            [user_id, total_price, billingAddressId, shippingAddressId]
+        );
+
+        const orderId = orderResult.rows[0].id;
+
+        // Insert order items
+        const orderItemsQueries = cart_items.map(item =>
+            client.query(
+                `INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ($1, $2, $3, $4)`,
+                [orderId, item.product_id, item.quantity, item.price]
+            )
+        );
+
+        await Promise.all(orderItemsQueries);
+
+        res.status(201).json({ message: "Order placed successfully", orderId });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Checkout failed" });
     }
 });
+
+// Get user details
+app.get("/api/user/:id", async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const userResult = await client.query(
+            `SELECT payment_method, street, city, state, country, zip_code, billing_address, shipping_address
+             FROM users 
+             WHERE id = $1`,
+            [userId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(userResult.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 
 
 app.use((err, req, res, next) => {
@@ -570,7 +695,7 @@ const init = async () => {
         })
     ]);
 
-   await fetchUsers();
+    await fetchUsers();
 
     await Promise.all([
         createProduct({

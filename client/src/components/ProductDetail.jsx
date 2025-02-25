@@ -77,9 +77,7 @@ export default function ProductDetail() {
                 </div>
             );
         }
-
- 
-
+        
     return (
         <>
             <Breadcrumbs currentPage="Product Details" />

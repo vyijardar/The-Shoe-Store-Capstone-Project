@@ -7,12 +7,15 @@ const jwt = require('jsonwebtoken');
 const JWT = process.env.JWT_SECRET || 'your_jwt_secret'
 const createTables = async () => {
   const SQL = `
-    DROP TABLE IF EXISTS users CASCADE;
-    DROP TABLE IF EXISTS products CASCADE;
-    DROP TABLE IF EXISTS orders CASCADE;
+    DROP TABLE IF EXISTS payments CASCADE;
     DROP TABLE IF EXISTS order_items CASCADE;
+    DROP TABLE IF EXISTS orders CASCADE;
+    DROP TABLE IF EXISTS addresses CASCADE;
+    DROP TABLE IF EXISTS cart CASCADE;
     DROP TABLE IF EXISTS products CASCADE;
+    DROP TABLE IF EXISTS users CASCADE;
     DROP TYPE IF EXISTS user_role;
+
     CREATE TYPE user_role AS ENUM ('admin', 'customer');
     CREATE TABLE users (
     id UUID PRIMARY KEY,
@@ -25,7 +28,16 @@ const createTables = async () => {
     role user_role DEFAULT 'customer',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
-    
+    ALTER TABLE users 
+    DROP COLUMN address,
+    ADD COLUMN street TEXT,
+    ADD COLUMN city VARCHAR(100),
+    ADD COLUMN state VARCHAR(100),
+    ADD COLUMN country VARCHAR(100),
+    ADD COLUMN zip_code VARCHAR(20),
+    ADD COLUMN billing_address TEXT,
+    ADD COLUMN shipping_address TEXT;
+
     CREATE TABLE products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
@@ -44,38 +56,89 @@ const createTables = async () => {
     DROP COLUMN image_url, 
     ADD COLUMN image_urls TEXT[];
 
-    CREATE TABLE orders (
-    id UUID PRIMARY KEY,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(255),
-    total DECIMAL(10, 2),
+    CREATE TABLE cart (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE, 
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    quantity INT NOT NULL CHECK (quantity > 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    UNIQUE(user_id, product_id));
 
+    CREATE TABLE addresses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    street TEXT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100),
+    country VARCHAR(100) NOT NULL,
+    zip_code VARCHAR(20) NOT NULL,
+    type VARCHAR(50) CHECK (type IN ('billing', 'shipping', 'home', 'work')) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+
+    CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    user_id UUID  REFERENCES users(id) ON DELETE CASCADE,
+    total_price DECIMAL(10,2) NOT NULL,
+    billing_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    shipping_address_id UUID REFERENCES addresses(id) ON DELETE SET NULL,
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'shipped', 'delivered', 'cancelled')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+   
     CREATE TABLE order_items (
-    id UUID PRIMARY KEY,
-    order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
-    product_name VARCHAR(255),
-    quantity INT,
-    price DECIMAL(10, 2));
+    id SERIAL PRIMARY KEY,
+    order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    price DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+
+    CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    order_id INT  REFERENCES orders(id) ON DELETE CASCADE,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50) CHECK (payment_method IN ('credit_card', 'paypal', 'bank_transfer')),
+    status VARCHAR(50) DEFAULT 'successful' CHECK (status IN ('successful', 'failed')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
     `;
   await client.query(SQL);
 
 }
 
-const createUser = async ({ firstname, lastname, email, password, role = 'customer' }) => {
+const createUser = async ({
+  firstname, lastname, email, password, role = 'customer', phone, street, city, state, country, zip_code, billing_address, shipping_address
+}) => {
   try {
+    const SQL = `INSERT INTO users(
+                    id, firstname, lastname, email, password, phone, street, city, state, country, zip_code, billing_address, shipping_address, role, created_at, updated_at
+                  ) 
+                  values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()) 
+                  RETURNING *`;
 
-    const SQL = `INSERT INTO users(id, firstname,lastname, email, password, role, created_at, updated_at) 
-                  values($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING *`;
-    const response = await client.query(SQL, [uuid.v4(), firstname, lastname, email, await bcrypt.hash(password, 10), role]);
+    const response = await client.query(SQL, [
+      uuid.v4(),
+      firstname,
+      lastname,
+      email,
+      await bcrypt.hash(password, 10),
+      phone,
+      street,
+      city,
+      state,
+      country,
+      zip_code,
+      billing_address,
+      shipping_address,
+      role
+    ]);
+
     return response.rows[0];
   } catch (error) {
     console.error("Error creating user:", error);
     throw new Error('Failed to create user');
   }
-}
+};
+
 
 const createProduct = async ({ name, price, description, brand, category, gender, size, color, stock, image_urls }) => {
   try {
@@ -120,7 +183,7 @@ async function findUserByEmail(email, password) {
   const normalizedEmail = email.trim().toLowerCase();
   const result = await client.query(SQL, [normalizedEmail]);
 
- 
+
   if (result.rows.length === 0) {
     throw new Error('User not found');
   }
@@ -133,8 +196,8 @@ async function findUserByEmail(email, password) {
   }
 
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },JWT );
-  return { token, user }; 
+    { id: user.id, email: user.email, role: user.role }, JWT);
+  return { token, user };
 }
 async function adminDetails() {
   const SQL = `SELECT id, email, firstname, lastname, role FROM users`;
@@ -173,7 +236,7 @@ const fetchUsers = async () => {
   }
 
 };
-const updateUser = async ({ userId,email, phone, address,role }) => {
+const updateUser = async ({ userId, email, phone, address, role }) => {
   try {
     const SQL = `UPDATE users 
     SET email = $1, phone = $2, address = $3, role = $4, updated_at = NOW() 
@@ -195,7 +258,7 @@ const deleteUser = async (id) => {
     if (response.rows.length === 0) {
       throw new Error('User not found');
     }
-    return response.rows[0]; 
+    return response.rows[0];
   } catch (error) {
     console.error("Error deleting user:", error);
     throw new Error('Failed to delete user');
@@ -245,7 +308,7 @@ const fetchSingleProduct = async (id) => {
   }
 };
 
-const updateProduct = async (id,productData) => {
+const updateProduct = async (id, productData) => {
   try {
     const { name, price, description, brand, category, gender, size, color, stock, image_urls } = productData;
     // const sizeArray = Array.isArray(size) ? size : size.split(",");
@@ -273,7 +336,7 @@ const deleteProduct = async ({ id }) => {
     }
 
     const SQL = ` DELETE FROM products WHERE id=$1`;
-    await client.query(SQL, [ id]);
+    await client.query(SQL, [id]);
   } catch (error) {
     console.error("Error fetching product:", error);
     throw error;

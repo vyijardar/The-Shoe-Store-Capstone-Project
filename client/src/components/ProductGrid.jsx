@@ -7,11 +7,11 @@ export default function ProductGrid({ products }) {
     // Using the CartContext to access cart items and the addToCart function
     const { addToCart, cartItems } = useContext(CartContext);
 
+    
     const handleAddToCart = (product) => {
         addToCart({ ...product, quantity: 1 });
         alert("Shoes Successfully Added to cart.");
     };
-
 
     return (
         <div className="row row-pb-md">
@@ -34,7 +34,7 @@ export default function ProductGrid({ products }) {
                             </div>
 
                             {/* Add to Cart Button */}
-                            <div className="col-sm-12 text-center">
+                            {/* <div className="col-sm-12 text-center">
                                 <p className="addtocart">
                                     <button
                                         className="btn btn-primary btn-addtocart"
@@ -43,7 +43,7 @@ export default function ProductGrid({ products }) {
                                         <FontAwesomeIcon icon={faShoppingCart} /> Add to Cart
                                     </button>
                                 </p>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 ))

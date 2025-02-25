@@ -28,17 +28,11 @@ function Cartpage() {
                 <div className="cart-items">
                   {cartItems.map((item) => (
                     <div key={item.id} className="cart-item">
-                      {/* Check if image_urls exists and is not empty */}
-                   
-                        <img
-                          src={item.image_urls[0]} // Use the first image URL
-                          alt={item.name}
-                          className="item-image"
-                        />
-                       
-
+                      {/* Check if image_urls exists and is not empty */}                  
+                        <img src={item.image_urls}  alt={item.name} className="item-image" />                    
                       <div className="item-details">
                         <h2>{item.name}</h2>
+                        <h6>Size: {item.selectedSize}</h6>
                         <p>{formatPrice(item.price)}</p>
 
                         <div className="item-quantity">
@@ -51,10 +45,7 @@ function Cartpage() {
                           </button>
                         </div>
 
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="remove-btn"
-                        >
+                        <button onClick={() => removeItem(item.id)} className="remove-btn"    >
                           Remove
                         </button>
                       </div>
