@@ -40,7 +40,7 @@ Our website is built with the latest web technologies to ensure a seamless shopp
 
 1. Clone the repository: 
 
-    git clone https:git@github.com:Kalayil/Capstone-Project.git
+    git clone git@github.com:vyijardar/The-Shoe-Store-Capstone-Project.git
    
 2. Install dependencies for both frontend and backend:
   ```
