@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate for navigation
+import { useParams, useNavigate } from "react-router-dom"; 
 import Breadcrumbs from './BreadCrumbs';
 import { CartContext } from '../context/CartContext';
 import { Carousel } from "react-bootstrap";
