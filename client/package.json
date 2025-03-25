@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "lint": "eslint",
-  "preview": "vite preview",
-  "start": "vite"
-},
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint",
+    "preview": "vite preview",
+    "start": "vite"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -25,6 +25,7 @@
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.8",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
     "react-owl-carousel": "^2.3.3",
     "react-router-dom": "^6.28.1"
   },

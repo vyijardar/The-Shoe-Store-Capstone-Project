@@ -9,8 +9,8 @@ function Cartpage() {
     const numericPrice = Number(price) || 0;
     return `$${numericPrice.toFixed(2)}`;
   };
-  
- return (
+
+  return (
     <div className="colorlib-product">
       <div className="container">
         <div className="row">
@@ -28,8 +28,10 @@ function Cartpage() {
                 <div className="cart-items">
                   {cartItems.map((item) => (
                     <div key={item.id} className="cart-item">
-                      {/* Check if image_urls exists and is not empty */}                  
-                        <img src={item.image_urls}  alt={item.name} className="item-image" />                    
+                      {/* Check if image_urls exists and is not empty */}
+                      <Link to={`/products/${item.id}`}>
+                        <img src={item.image_urls} alt={item.name} className="item-image" />
+                      </Link>
                       <div className="item-details">
                         <h2>{item.name}</h2>
                         <h6>Size: {item.selectedSize}</h6>

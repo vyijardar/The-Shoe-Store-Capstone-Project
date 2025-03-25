@@ -1,46 +1,74 @@
+import { useState, useContext, useEffect } from "react";
+import React from "react";
 
-export default function ShippingForm () {
-
+export default function ShippingForm() {
+    const UserContext = React.createContext({
+        isLoggedIn: false,
+        user: {
+            id: "", // When logged in, this should be set to the user's UUID.
+            savedAddress: {
+                name: 'John Doe',
+                street: '123 Main St',
+                city: 'New York',
+                state: 'NY',
+                postalCode: '10001',
+                country: 'USA',
+            },
+            savedPaymentMethod: {
+                cardNumber: '1111-2222-3333-4444',
+            },
+        },
+    });
+    const CartContext = React.createContext({
+        cartItems: [],
+        total: 0,
+        setCartItems: () => { },
+    });
     
-  // Navigation helpers
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => prev - 1);
+    // Shipping fields
+    const [shippingData, setShippingData] = useState({
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'USA',
+      shippingMethod: 'standard',
+    });
+  
+    // Billing fields
+    const [useSameAddress, setUseSameAddress] = useState(true);
+    const [billingData, setBillingData] = useState({
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'USA',
+    });
+  
+    // Payment field
+    const [cardNumber, setCardNumber] = useState('');
+    const { isLoggedIn, savedAddress, savedPaymentMethod } = useContext(UserContext);
+    useEffect(() => {
+      if (isLoggedIn) {
+        setShippingData((prev) => ({
+          ...prev,
+          ...savedAddress,
+          shippingMethod: 'standard',
+        }));
+        setBillingData((prev) => ({
+          ...prev,
+          ...savedAddress,
+        }));
+        setCardNumber(savedPaymentMethod.cardNumber || '');
+      }
+      // eslint-disable-next-line
+    }, [isLoggedIn]);
+  
+  function submitShippingForm(){
 
-    const submitShippingForm = async (e) => {
-        e.preventDefault();
-        
-        // For this example, we assume that if the user chooses to use the same address,
-        // the billing address is the same as the shipping address.
-        const billingAddress = shippingData; 
-      
-        try {
-          const response = await fetch(`${api}/api/checkout`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              user_id: user.id,                 // from your UserContext
-              cart_items: cartItems,            // from your CartContext
-              total_price: total,               // total price (you can adjust to include shipping/tax if needed)
-              billing_address: billingAddress,  // using shippingData as billing address here
-              shipping_address: shippingData,   // shipping details from the form
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error("Checkout failed");
-          }
-      
-          const data = await response.json();
-          console.log("Checkout successful:", data);
-          // Optionally, you could save the order ID returned in data.orderId
-          // and then move to the next step (e.g. review or confirmation).
-          nextStep();
-        } catch (error) {
-          console.error("Error during checkout:", error);
-          alert("Checkout failed: " + error.message);
-        }
-        nextStep();
-      };
+  }
     return (
         <div className="checkout-step checkout-form">
             <h2 className="checkout-section-title">Shipping Address</h2>

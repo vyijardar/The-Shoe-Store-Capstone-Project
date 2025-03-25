@@ -1,197 +1,136 @@
-import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-// import { CartContext } from "../context/CartContext";
-import "../css/Checkout.css";
-import ShippingForm from "./ShippingForm";
-import Confirmation from "./Confirmation";
-const api = import.meta.env.VITE_API_URL || "http://localhost:3001";
-const UserContext = React.createContext({
-  isLoggedIn: false,
-  user: {
-    id: "", // When logged in, this should be set to the user's UUID.
-    savedAddress: {
-      name: 'John Doe',
-      street: '123 Main St',
-      city: 'New York',
-      state: 'NY',
-      postalCode: '10001',
-      country: 'USA',
-    },
-    savedPaymentMethod: {
-      cardNumber: '1111-2222-3333-4444',
-    },
-  },
-});
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useCart } from "../context/CartContext"; // Adjust path if needed
+import { Card, Form, Button, InputGroup } from "react-bootstrap";
+import { FaCcVisa, FaCcMastercard, FaCcAmex, FaCcDiscover, FaPaypal, FaBitcoin } from "react-icons/fa";
 
-const CartContext = React.createContext({
-  cartItems: [],
-  total: 0,
-  setCartItems: () => { },
-});
-export default function Checkout() {
-  const [step, setStep] = useState(1);
-
-  // Shipping fields
-  const [shippingData, setShippingData] = useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: 'USA',
-    shippingMethod: 'standard',
-  });
-
-  // Billing fields
-  const [useSameAddress, setUseSameAddress] = useState(true);
-  const [billingData, setBillingData] = useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: 'USA',
-  });
-
-
-  const { isLoggedIn, user, savedAddress, savedPaymentMethod } = useContext(UserContext);
-  const { cartItems, total, setCartItems } = useContext(CartContext);
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (isLoggedIn && user.id) {
-      setShippingData((prev) => ({
-        ...prev,
-        ...savedAddress,
-        shippingMethod: 'standard',
-      }));
-      setBillingData((prev) => ({
-        ...prev,
-        ...savedAddress,
-      }));
-      setCardNumber(user.savedPaymentMethod.cardNumber || '');
-      // Fetch cart items for the user.
-      fetch(`${api}/api/cart?user_id=${user.id}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch cart items");
-          return res.json();
-        })
-        .then((data) => setCartItems(data))
-        .catch((error) =>
-          console.error("Error fetching cart items:", error)
-        );
-    }
-  }, [isLoggedIn, user, setCartItems]);
-
-  // Shipping cost & tax logic
-  const shippingCost =
-    shippingData.shippingMethod === 'standard'
-      ? 5
-      : shippingData.shippingMethod === 'express'
-        ? 10
-        : 15;
-  const tax = 0.08 * total;
-
-  // Progress bar
-  const renderProgress = () => {
-    const stepsArray = ['Cart', 'Shipping', 'Payment', 'Review', 'Confirmation'];
-
-    return (
-      <div className="progress-bar">
-        {stepsArray.map((label, index) => {
-          // 'active' remains true for all steps up to the current step
-          const active = step >= index + 1;
-          // 'currentStep' is ONLY true for the exact step the user is on
-          const currentStep = step === index + 1;
-          return (
-            <div
-              key={label}
-              className={`progress-step ${active ? 'active' : ''}`}
-              style={{ fontWeight: currentStep ? 'bold' : 'normal' }}
-            >
-              {label}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // STEP 1: Shipping
-  const renderShippingForm = () => (
-    <ShippingForm />
-  );
-
-  // STEP 2: Payment
-  const renderPaymentForm = () => (
-    <PaymentForm />
-  );
-
-  // STEP 3: Review
-  const renderReview = () => (
-   <Review />
-  );
-
-  // STEP 4: Confirmation
-  const renderConfirmation = () => (
-    <Confirmation />
-  );
-
-  // Always-visible order summary (right column)
-  const renderOrderSummary = () => (
-    <div className="order-summary">
-      <h4>{cartItems.length} Item{cartItems.length !== 1 && 's'}</h4>
-
-      {cartItems.map((item) => (
-        <div className="item" key={item.id}>
-          {item.imageUrl && (
-            <img src={item.imageUrl} alt={item.name} />
-          )}
-          <div className="item-details">
-            <p>{item.name}</p>
-            <p>Qty: {item.quantity}</p>
-            <p>${item.price.toFixed(2)}</p>
-          </div>
-        </div>
-      ))}
-
-      <div className="order-total">
-        <div className="subtotal">
-          <span>Subtotal</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
-        <div className="subtotal">
-          <span>Shipping</span>
-          <span>${shippingCost.toFixed(2)}</span>
-        </div>
-        <div className="subtotal">
-          <span>Tax</span>
-          <span>${tax.toFixed(2)}</span>
-        </div>
-        <hr />
-        <div className="total">
-          <span>Total to Pay</span>
-          <strong>${(total + shippingCost + tax).toFixed(2)}</strong>
-        </div>
-      </div>
-    </div>
-  );
+const CheckoutPage = () => {
+  const { cartItems, total, totalItems } = useCart();
 
   return (
-    <div className="checkout-container">
-      {/* LEFT COLUMN: Steps / Forms */}
-      <div className="checkout-left">
-        {renderProgress()}
+    <div className="container mt-5">
+      <div className="row">
+        {/* Left Side: Contact, Delivery & Payment */}
+        <div className="col-md-7">
+          {/* Express Checkout */}
+          <Card className="mb-4 p-3 text-center">
+            <Button variant="primary" className="m-1">Shop Pay</Button>
+            <Button variant="warning" className="m-1">G Pay</Button>
+            <Button variant="info" className="m-1">Venmo</Button>
+            <Button variant="light" className="m-1"><FaPaypal /> PayPal</Button>
+            <hr />
+            <p>OR</p>
+          </Card>
 
-        {step === 1 && renderShippingForm()}
-        {step === 2 && renderPaymentForm()}
-        {step === 3 && renderReview()}
-        {step === 4 && renderConfirmation()}
-      </div>
+          {/* Contact */}
+          <Card className="mb-4 p-4">
+            <h4>Contact</h4>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Email Address</Form.Label>
+                <Form.Control type="email" placeholder="Enter your email" />
+              </Form.Group>
+            </Form>
+          </Card>
 
-      {/* RIGHT COLUMN: Always-visible summary */}
-      <div className="checkout-right">
-        {renderOrderSummary()}
+          {/* Delivery */}
+          <Card className="mb-4 p-4">
+            <h4>Delivery</h4>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Country/Region</Form.Label>
+                <Form.Select>
+                  <option>United States</option>
+                </Form.Select>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Full Name</Form.Label>
+                <Form.Control type="text" placeholder="First Name" />
+                <Form.Control type="text" placeholder="Last Name" className="mt-2" />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Address</Form.Label>
+                <Form.Control type="text" placeholder="Street Address" />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>City</Form.Label>
+                <Form.Control type="text" placeholder="City" />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>State</Form.Label>
+                <Form.Control type="text" placeholder="State" />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Zip Code</Form.Label>
+                <Form.Control type="text" placeholder="Zip Code" />
+              </Form.Group>
+            </Form>
+          </Card>
+
+          {/* Payment */}
+          <Card className="mb-4 p-4">
+            <h4>Payment</h4>
+            <Form>
+              <Form.Check type="radio" label="Credit Card" name="payment" defaultChecked />
+              <InputGroup className="mt-2">
+                <Form.Control type="text" placeholder="Card Number" />
+                <span className="input-group-text">
+                  <FaCcVisa /> <FaCcMastercard /> <FaCcAmex /> <FaCcDiscover />
+                </span>
+              </InputGroup>
+              <div className="row mt-2">
+                <div className="col-md-6">
+                  <Form.Control type="text" placeholder="MM/YY" />
+                </div>
+                <div className="col-md-6">
+                  <Form.Control type="text" placeholder="CVV" />
+                </div>
+              </div>
+              <Form.Check type="radio" label="PayPal" name="payment" className="mt-3" />
+              <Form.Check type="radio" label="Shop Pay" name="payment" className="mt-2" />
+              <Form.Check type="radio" label="Afterpay" name="payment" className="mt-2" />
+              <Form.Check type="radio" label="Bitcoin" name="payment" className="mt-2" />
+            </Form>
+          </Card>
+
+          <Button className="w-100" variant="dark">Pay now</Button>
+        </div>
+
+        {/* Right Side: Order Summary */}
+        <div className="col-md-5">
+          <Card className="p-4">
+            <h4>Order Summary</h4>
+  
+            <ul className="list-group mb-3">
+              {cartItems.map((item) => (
+                <li key={item.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    {item.name} (x{item.quantity})
+                  </span>
+                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <h5>Total Items: {totalItems}</h5>
+            <h4>Total: ${total.toFixed(2)}</h4>
+       
+            <Form.Control type="text" placeholder="Discount Code" className="mb-2" />
+            <Button variant="outline-secondary" className="w-100 mb-3">Apply</Button>
+            <Form.Check type="checkbox" label="Verify with ID.me" className="mb-3" />
+            <div className="d-flex justify-content-between">
+              <p>Subtotal</p>
+              <p>$161.00</p>
+            </div>
+            <hr />
+            <div className="d-flex justify-content-between">
+              <h5>Total</h5>
+              <h5>$161.00</h5>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default CheckoutPage;
