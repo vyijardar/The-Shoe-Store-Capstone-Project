@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-
 // import { CartContext } from "../context/CartContext";
 import "../css/Checkout.css";
 import ShippingForm from "./ShippingForm";
@@ -52,7 +51,6 @@ export default function Checkout() {
     postalCode: '',
     country: 'USA',
   });
-
 
   const { isLoggedIn} = useContext(UserContext);
 
